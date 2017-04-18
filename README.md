@@ -99,8 +99,8 @@ services:
     volumes:
       - secrets/ca_crt.pem:/run/secrets/ca_crt.pem
       - secrets/ca_user.pwd:/run/secrets/ca_user.pwd
-      - www:var/www
       - config/server.conf:/etc/lighttpd/server/conf
+      - www:var/www
     environment:
       - SIMPLE_CA_URL=https://simple-ca:9443
       - SERVER_CRT_NAME=my-service.my-domain
