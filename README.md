@@ -79,7 +79,7 @@ curl \
 
 At first populate `secrets` directory with CA secrets:
 ```bash
-docker run -v $PWD/secrets:/var/lib/simple-ca/secrets sicz/simple-ca:3.5 /docker-entrypoint.sh secrets
+docker run -v $PWD/secrets:/var/lib/simple-ca/secrets sicz/simple-ca:3.5 secrets
 ```
 
 You can start with this sample `docker-compose.yml` file:
