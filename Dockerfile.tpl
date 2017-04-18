@@ -12,12 +12,6 @@ ENV \
   LIGHTTPD_PORT=9443 \
   SIMPLE_CA_DIR=/var/lib/simple-ca
 
-# # LibreSSL removed support for ENV in openssl.config
-# RUN set -x \
-#   && apk del --no-cache libressl \
-#   && apk add --no-cache openssl \
-#   ;
-
 COPY config /etc
 COPY docker-entrypoint.d /docker-entrypoint.d
 COPY www ${LIGHTTPD_DIR}
