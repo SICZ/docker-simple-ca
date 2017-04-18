@@ -9,7 +9,7 @@ DOCKER_RUN_OPTS		= -v $(CURDIR)/secrets:/var/lib/simple-ca/secrets \
 
 
 .PHONY: all build rebuild deploy run up destroy rm down start stop restart
-.PHONY: status logs exec shell clean secrets
+.PHONY: status logs shell clean secrets
 
 all: destroy build secrets deploy logs-tail
 build: docker-build
@@ -22,7 +22,6 @@ restart: docker-stop docker-start
 status: docker-status
 logs: docker-logs
 logs-tail: docker-logs-tail
-exec: docker-exec
 shell: docker-shell
 
 clean: destroy
