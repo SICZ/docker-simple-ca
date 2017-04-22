@@ -1,8 +1,8 @@
-ALPINE_TAG		?= latest
+ALPINE_VERSION		?= latest
 
 DOCKER_PROJECT		= sicz
 DOCKER_NAME		= simple-ca
-DOCKER_TAG		= $(ALPINE_TAG)
+DOCKER_TAG		= $(ALPINE_VERSION)
 
 DOCKER_RUN_OPTS		= -v $(CURDIR)/secrets:/var/lib/simple-ca/secrets \
 			  -v /var/run/docker.sock:/var/run/docker.sock
