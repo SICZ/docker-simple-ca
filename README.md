@@ -1,7 +1,7 @@
 # docker-simple-ca
 
 **This project is not aimed at public consumption.
-It exists to support the development of SICZ containers.**
+It exists to serve as a single endpoint for SICZ containers.**
 
 A simple automated Certificate Authority. Such CA is useful on auto provisioned
 clusters secured by certificates.
@@ -31,7 +31,8 @@ Use command `make` to simplify Docker container development tasks:
 ```bash
 make all        # Destroy running container, build new image, run container and show logs
 make build      # Build new image
-make rebuild    # Refresh Dockerfile and build new image
+make refresh    # Refresh Dockerfile
+make rebuild    # Build new image without caching
 make secrets    # Populate directory secrets with CA certificate and secrets
 make run        # Run container
 make stop       # Stop running container
@@ -41,6 +42,7 @@ make status     # Show container status
 make logs       # Show container logs
 make logs-tail  # Connect to container logs
 make shell      # Open shell in running container
+make test       # Run tests
 make rm         # Destroy running container
 make clean      # Destroy running container and delete CA secrets
 ```
