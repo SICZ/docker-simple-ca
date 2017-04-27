@@ -65,17 +65,22 @@ describe "Certificate authority" do
 
   context "web services" do
     context "CA certificate endpoint" do
+      file = "/tmp/ca_crt.pem"
       subject do
         command("
           curl -fs \
             --cacert /var/lib/simple-ca/secrets/ca_crt.pem \
+            --output #{(file)} \
             https://localhost/ca.pem
         ")
       end
       it "returns valid certificate" do
         ca_crt = File.read("secrets/ca_crt.pem")
         expect(subject.exit_status).to eq 0
-        expect(subject.stdout).to eq(ca_crt)
+        expect(x509_certificate(file)).to be_certificate
+        expect(x509_certificate(file)).to be_valid
+        expect(x509_certificate(file).subject).to eq "/CN=Docker Simple CA"
+        expect(x509_certificate(file).issuer).to eq "/CN=Docker Simple CA"
       end
     end
     context "certificate sign endpoint" do
