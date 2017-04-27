@@ -78,8 +78,8 @@ describe "Certificate authority" do
         expect(subject.exit_status).to eq 0
         expect(x509_certificate(file)).to be_certificate
         expect(x509_certificate(file)).to be_valid
-        expect(x509_certificate(file).subject).to eq "/CN=Docker Simple CA"
-        expect(x509_certificate(file).issuer).to eq "/CN=Docker Simple CA"
+        expect(x509_certificate(file).subject).to eq("/CN=Docker Simple CA")
+        expect(x509_certificate(file).issuer).to eq("/CN=Docker Simple CA")
       end
     end
     context "certificate sign endpoint" do
@@ -102,20 +102,20 @@ describe "Certificate authority" do
       end
       # Read certificate
       it "returns valid certificate" do
-        expect(subject.exit_status).to eq 0
+        expect(subject.exit_status).to eq(0)
         expect(file(key)).to exist
         expect(file(crt)).to exist
         expect(x509_private_key(key)).to be_valid
         expect(x509_certificate(crt)).to be_certificate
         expect(x509_certificate(crt)).to be_valid
-        expect(x509_certificate(crt).subject).to eq "/CN=test.local"
-        expect(x509_certificate(crt).issuer).to eq "/CN=Docker Simple CA"
+        expect(x509_certificate(crt).subject).to eq("/CN=test.local")
+        expect(x509_certificate(crt).issuer).to eq("/CN=Docker Simple CA")
         expect(x509_certificate(crt).validity_in_days).to be > 3650
-        expect(x509_certificate(crt).subject_alt_names).to include "DNS:test.local"
-        expect(x509_certificate(crt).subject_alt_names).to include "DNS:localhost"
-        expect(x509_certificate(crt).subject_alt_names).to include "IP Address:192.0.2.1"
-        expect(x509_certificate(crt).subject_alt_names).to include "IP Address:127.0.0.1"
-        expect(x509_certificate(crt).subject_alt_names).to include "Registered ID:1.2.3"
+        expect(x509_certificate(crt).subject_alt_names).to include("DNS:test.local")
+        expect(x509_certificate(crt).subject_alt_names).to include("DNS:localhost")
+        expect(x509_certificate(crt).subject_alt_names).to include("IP Address:192.0.2.1")
+        expect(x509_certificate(crt).subject_alt_names).to include("IP Address:127.0.0.1")
+        expect(x509_certificate(crt).subject_alt_names).to include("Registered ID:1.2.3")
         expect(x509_private_key(key)).to have_matching_certificate(crt)
       end
     end

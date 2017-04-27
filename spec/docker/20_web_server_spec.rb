@@ -25,7 +25,7 @@ describe "Web server" do
       expect(user("lighttpd")).to have_uid(1000)
     end
     it "belongs to primary group 'lighttpd'" do
-      expect(user("lighttpd")).to belong_to_primary_group "lighttpd"
+      expect(user("lighttpd")).to belong_to_primary_group("lighttpd")
     end
   end
 
@@ -55,8 +55,8 @@ describe "Web server" do
       expect(x509_certificate(crt).subject).to eq "/CN=sicz_simple_ca"
       expect(x509_certificate(crt).issuer).to eq "/CN=Docker Simple CA"
       expect(x509_certificate(crt).validity_in_days).to be > 3650
-      expect(x509_certificate(crt).subject_alt_names).to include "DNS:localhost"
-      expect(x509_certificate(crt).subject_alt_names).to include "IP Address:127.0.0.1"
+      expect(x509_certificate(crt).subject_alt_names).to include("DNS:localhost")
+      expect(x509_certificate(crt).subject_alt_names).to include("IP Address:127.0.0.1")
       expect(x509_private_key(key)).to have_matching_certificate(crt)
     end
   end
