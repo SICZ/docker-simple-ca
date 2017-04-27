@@ -7,8 +7,6 @@ DOCKER_TAG		= $(ALPINE_VERSION)
 DOCKER_RUN_OPTS		+= -v $(CURDIR)/secrets:/var/lib/simple-ca/secrets \
 			   -v /var/run/docker.sock:/var/run/docker.sock
 DOCKER_SHELL_CMD	= /docker-entrypoint.sh bash
-DOCKER_TEST_OPTS	+= -v $(CURDIR)/secrets:/secrets
-
 
 .PHONY: all build rebuild deploy run up destroy rm down start stop restart
 .PHONY: status logs shell refresh test clean secrets
