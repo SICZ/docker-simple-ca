@@ -75,7 +75,6 @@ describe "Certificate authority" do
         ")
       end
       it "returns valid certificate" do
-        ca_crt = File.read("secrets/ca_crt.pem")
         expect(subject.exit_status).to eq 0
         expect(x509_certificate(file)).to be_certificate
         expect(x509_certificate(file)).to be_valid
