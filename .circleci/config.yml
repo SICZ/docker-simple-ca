@@ -1,0 +1,34 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: sicz/dockerspec:17.04.24
+    working_directory: ~/docker-simple-ca
+    environment:
+      - MAKEFLAGS=--no-print-directory
+    steps:
+      - run:
+          name: Set up Environment
+          command: |
+            curl -sSL https://github.com/SICZ/Mk/archive/master.tar.gz | tar -xzf -
+            mv Mk-master ~/Mk
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Remote Docker engine version
+          command: |
+            docker version
+      - run:
+          name: Build Docker image
+          command: |
+            make rebuild
+      - run:
+          name: Run Docker container
+          command: |
+            make secrets
+            make run
+            make logs
+      - run:
+          name: Run tests
+          command: |
+            env DOCKER_CONTAINER_ID=$(cat .container_id) rspec --format doc

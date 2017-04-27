@@ -1,5 +1,7 @@
 # docker-simple-ca
 
+[![CircleCI Status Badge](https://circleci.com/gh/sicz/docker-simple-ca.svg?style=shield&circle-token=06deeca25c070ce627cd547f0631afdc2c700f10)](https://circleci.com/gh/sicz/docker-simple-ca)
+
 **This project is not aimed at public consumption.
 It exists to serve as a single endpoint for SICZ containers.**
 

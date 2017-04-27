@@ -26,15 +26,15 @@ notFound() {
   exit 1
 }
 
-if [ ! -d "${SIMPLE_CA_DIR}" ]; then
+if [ ! -d "/var/lib/simple-ca" ]; then
   die "CA not found"
 fi
 cd "${CA_DIR}"
-export RANDFILE=${SIMPLE_CA_DIR}/.rnd
+export RANDFILE=/var/lib/simple-ca/.rnd
 
 sign() {
   local CRT=$1
-  unset DN DNS IP OID
+  unset DN DNS IP RID
   IFS="&" # Split strings at '&'
   for PARAM in ${QUERY_STRING}; do
     VARNAME="${PARAM%%=*}"
@@ -49,8 +49,8 @@ sign() {
       ip)
         IP=${VARVALUE}
         ;;
-      oid)
-        OID=${VARVALUE}
+      rid)
+        RID=${VARVALUE}
         ;;
       *)
         badRequest "Unknown parameter '${PARAM}'"
@@ -71,7 +71,7 @@ sign() {
     -in <(cat -) \
     -out "${CRT}" \
     -extfile <(
-      echo "subjectAltName=critical,@alt_names"
+      echo "subjectAltName=@alt_names"
       echo "[ alt_names ]"
       IFS="," # Split strings at ','
       i=1
@@ -87,9 +87,9 @@ sign() {
         i=$((i+1))
       done
       i=1
-      for ALT_OID in ${OIS}; do
-        [ -n "${ALT_OID}" ] || continue
-        echo "RID.${i}=${ALT_OID}"
+      for ALT_RID in ${RID}; do
+        [ -n "${ALT_RID}" ] || continue
+        echo "RID.${i}=${ALT_RID}"
         i=$((i+1))
       done
       unset IFS

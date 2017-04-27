@@ -4,7 +4,7 @@ debug0 "Processing $(basename ${DOCKER_ENTRYPOINT:-$0})"
 
 ################################################################################
 # OpenSSL random file
-export RANDFILE=${SIMPLE_CA_DIR}/.rnd
+export RANDFILE=/var/lib/simple-ca/.rnd
 
 ################################################################################
 # Default CA user name and realm
@@ -15,7 +15,7 @@ export RANDFILE=${SIMPLE_CA_DIR}/.rnd
 if [ -e /run/secrets/ca_user.pwd ]; then
   : ${CA_USER_PWD_FILE:=/run/secrets/ca_user.pwd}
 else
-  : ${CA_USER_PWD_FILE:=${SIMPLE_CA_DIR}/secrets/ca_user.pwd}
+  : ${CA_USER_PWD_FILE:=/var/lib/simple-ca/secrets/ca_user.pwd}
 fi
 
 ################################################################################
@@ -26,27 +26,26 @@ fi
 if [ -e /run/secrets/ca_crt.pem ]; then
   : ${CA_CRT:=/run/secrets/ca_crt.pem}
 else
-  : ${CA_CRT:=${SIMPLE_CA_DIR}/secrets/ca_crt.pem}
+  : ${CA_CRT:=/var/lib/simple-ca/secrets/ca_crt.pem}
 fi
 
 # Default CA private key file location
 if [ -e /run/secrets/ca_key.pem ]; then
   : ${CA_KEY:=/run/secrets/ca_key.pem}
 else
-  : ${CA_KEY:=${SIMPLE_CA_DIR}/secrets/ca_key.pem}
+  : ${CA_KEY:=/var/lib/simple-ca/secrets/ca_key.pem}
 fi
 
 # Default CA private key passphrase file
 if [ -e /run/secrets/ca_key.pwd ]; then
   : ${CA_KEY_PWD_FILE:=/run/secrets/ca_key.pwd}
 else
-  : ${CA_KEY_PWD_FILE:=${SIMPLE_CA_DIR}/secrets/ca_key.pwd}
+  : ${CA_KEY_PWD_FILE:=/var/lib/simple-ca/secrets/ca_key.pwd}
 fi
 
 # Paths must be hardcoded in openssl.cnf because LibreSSL removed support
 # for ${ENV::VARIABLE} in openssl.cnf
 sed -i -E \
-  -e "s|%%SIMPLE_CA_DIR%%|${SIMPLE_CA_DIR}|" \
   -e "s|%%CA_CRT%%|${CA_CRT}|" \
   -e "s|%%CA_KEY%%|${CA_KEY}|" \
   /etc/ssl/openssl.cnf
@@ -74,14 +73,14 @@ export CA_CRT CA_KEY CA_KEY_PWD_FILE
 if [ -e /run/secrets/ca_server.pem ]; then
   : ${SERVER_CRT:=/run/secrets/ca_server.pem}
 else
-  : ${SERVER_CRT:=${SIMPLE_CA_DIR}/secrets/ca_server.pem}
+  : ${SERVER_CRT:=/var/lib/simple-ca/secrets/ca_server.pem}
 fi
 
 # Default server private key file location
 if [ -e /run/secrets/ca_server_key.pem ]; then
   : ${SERVER_KEY:=/run/secrets/ca_server_key.pem}
 else
-  : ${SERVER_KEY:=${SIMPLE_CA_DIR}/secrets/ca_server_key.pem}
+  : ${SERVER_KEY:=/var/lib/simple-ca/secrets/ca_server_key.pem}
 fi
 
 # NOTE: lighttpd does not support server private key passphrase
@@ -89,7 +88,7 @@ fi
 # if [ -e /run/secrets/ca_server_key.pwd ]; then
 #   : ${SERVER_KEY_PWD_FILE:=/run/secrets/ca_server_key.pwd}
 # else
-#   : ${SERVER_KEY_PWD_FILE:=${SIMPLE_CA_DIR}/secrets/ca_server_key.pwd}
+#   : ${SERVER_KEY_PWD_FILE:=/var/lib/simple-ca/secrets/ca_server_key.pwd}
 # fi
 #
 # # Server private key passphrase

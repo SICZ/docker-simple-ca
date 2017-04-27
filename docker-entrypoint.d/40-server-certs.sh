@@ -4,15 +4,15 @@ debug0 "Processing $(basename ${DOCKER_ENTRYPOINT:-$0})"
 
 ################################################################################
 # Initialize CA's directory
-if [ ! -e ${SIMPLE_CA_DIR}/serial ]; then
-  info "Initializing CA directory ${SIMPLE_CA_DIR}"
-  mkdir -p ${SIMPLE_CA_DIR}/newcerts ${SIMPLE_CA_DIR}/secrets
-  touch ${SIMPLE_CA_DIR}/index
+if [ ! -e /var/lib/simple-ca/serial ]; then
+  info "Initializing CA directory /var/lib/simple-ca"
+  mkdir -p /var/lib/simple-ca/newcerts /var/lib/simple-ca/secrets
+  touch /var/lib/simple-ca/index
   if [ -e ${SERVER_CRT} ]; then
     # SERVER_CRT has serial number 01, start from 02
-    echo -n "02" > ${SIMPLE_CA_DIR}/serial
+    echo -n "02" > /var/lib/simple-ca/serial
   else
-    echo -n "01" > ${SIMPLE_CA_DIR}/serial
+    echo -n "01" > /var/lib/simple-ca/serial
   fi
 fi
 
@@ -65,8 +65,8 @@ if [ ! -e "${SERVER_CRT}" ]; then
     -keyout "${SERVER_KEY}" |
   env \
     PATH_INFO="/sign" \
-    QUERY_STRING="dn=${SERVER_CRT_SUBJECT}&dns=${SERVER_CRT_NAMES}&ip=${SERVER_CRT_IP}&oid=${SERVER_CRT_OID}" \
-  ${LIGHTTPD_DIR}/simple-ca.cgi |
+    QUERY_STRING="dn=${SERVER_CRT_SUBJECT}&dns=${SERVER_CRT_NAMES}&ip=${SERVER_CRT_IP}&rid=${SERVER_CRT_RID}" \
+  /var/www/simple-ca.cgi |
   egrep -v "^(HTTP/.*|Content-Type:.*|)$" > ${SERVER_CRT}
   cat ${SERVER_KEY} >> ${SERVER_CRT}
   chmod o-rwx ${SERVER_CRT}
@@ -88,7 +88,5 @@ fi
 
 ################################################################################
 # Set permissions
-if [ -n "${DOCKER_USER}" ]; then
-  chown -R ${DOCKER_USER}:${DOCKER_USER} ${SIMPLE_CA_DIR} ${SERVER_USER_DB}
-fi
-chmod -R o-rwx ${SIMPLE_CA_DIR} ${SERVER_USER_DB}
+chown -R lighttpd:lighttpd /var/lib/simple-ca ${SERVER_USER_DB}
+chmod -R o-rwx /var/lib/simple-ca ${SERVER_USER_DB}
