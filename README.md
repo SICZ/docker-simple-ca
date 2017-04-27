@@ -49,7 +49,7 @@ make rm         # Destroy running container
 make clean      # Destroy running container and delete CA secrets
 ```
 
-With default configuration `simple-ca` listening on port 9443 and sending all
+With default configuration `simple-ca` listening on port 443 and sending all
 logs to the Docker console.
 
 After first run is directory `secrets` populated with CA certificate and secrets:
@@ -61,7 +61,7 @@ After first run is directory `secrets` populated with CA certificate and secrets
 
 How to obtain CA certificate:
 ```bash
-curl -k /secrets/ca_crt.pem http://simple-ca:9443/ca.pem > ca_crt.pem
+curl -k https://simple-ca/ca.pem > ca_crt.pem
 ```
 
 How to obtain server certificate:
@@ -76,7 +76,7 @@ curl \
   --user "agent007:$(cat ca_user.pwd)"
   --data-binary @- \
   --output server_crt.pem \
-  "https://simple-ca>9443/sign?dn=CN=${HOSTNAME}&dns=${SERVER_CRT_NAMES}&ip=${SERVER_CRT_IP}&oid=${SERVER_CRT_OID}"
+  "https://simple-ca/sign?dn=CN=${HOSTNAME}&dns=${SERVER_CRT_NAMES}&ip=${SERVER_CRT_IP}&oid=${SERVER_CRT_OID}"
 ```
 
 ## Deployment
@@ -92,21 +92,21 @@ services:
   simple-ca:
     image: sicz/simple-ca:3.5
     ports:
-      - 9443
+      - 9443:443
     volumes:
       - secrets:/var/lib/simple-ca/secrets
   lighttpd:
     image: sicz/lighttpd:3.5
     ports:
-      - 80:8080
-      - 443:8443
+      - 8080:80
+      - 8443:443
     volumes:
       - secrets/ca_crt.pem:/run/secrets/ca_crt.pem
       - secrets/ca_user.pwd:/run/secrets/ca_user.pwd
       - config/server.conf:/etc/lighttpd/server/conf
       - www:/var/www
     environment:
-      - SIMPLE_CA_URL=https://simple-ca:9443
+      - SIMPLE_CA_URL=https://simple-ca
       - SERVER_CRT_NAME=my-service.my-domain
 ```
 
