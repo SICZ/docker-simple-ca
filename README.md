@@ -11,7 +11,7 @@ clusters secured by certificates.
 ## Contents
 
 This container only contains essential components:
-* [sicz/lighttpd](https://github.com/sicz/docker-baseimage-alpine) provide web server.
+* [sicz/lighttpd image](https://github.com/sicz/docker-lighttpd) provide web server.
 * `simple-ca.cgi` script as certificate authority.
 
 ## Getting started
@@ -49,8 +49,8 @@ make rm         # Destroy running container
 make clean      # Destroy running container and delete CA secrets
 ```
 
-With default configuration `simple-ca` listening on port 443 and sending all
-logs to the Docker console.
+With default configuration `simple-ca` listens on TCP port 443 and sends all
+logs to Docker console.
 
 After first run is directory `secrets` populated with CA certificate and secrets:
 * `ca_crt.pem` - CA certificate
