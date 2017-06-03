@@ -1,21 +1,9 @@
 # encoding: UTF-8
 require "docker_helper"
 
-describe "Operating system" do
-  subject do
-    os
-  end
-  it "is Alpine Linux 3.6" do
-    expect(subject[:family]).to eq("alpine")
-    expect(subject[:release]).to match(/^3\.6\./)
-  end
-end
-
 describe "Packages" do
   [
     "bash",
-    "curl",
-    "jq",
     "libressl",
     "lighttpd",
     "lighttpd-mod_auth",
@@ -30,8 +18,9 @@ end
 
 describe "Docker entrypoint file" do
   context "/docker-entrypoint.sh" do
-    it "has set permissions" do
+    it "is installed" do
       expect(file("/docker-entrypoint.sh")).to exist
+      expect(file("/docker-entrypoint.sh")).to be_file
       expect(file("/docker-entrypoint.sh")).to be_executable
     end
   end
@@ -42,6 +31,7 @@ describe "Docker entrypoint file" do
     context file do
       it "exists" do
         expect(file(file)).to exist
+        expect(file(file)).to be_file
         expect(file(file)).to be_readable
       end
     end
