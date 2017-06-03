@@ -1,7 +1,7 @@
 # encoding: UTF-8
 require "docker_helper"
 
-describe "Packages" do
+describe "Package" do
   [
     "bash",
     "libressl",
