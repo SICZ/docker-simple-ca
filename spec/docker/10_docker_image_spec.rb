@@ -1,7 +1,17 @@
 # encoding: UTF-8
 require "docker_helper"
 
-describe "Package" do
+describe "Operating system" do
+  subject do
+    os
+  end
+  it "is Alpine Linux 3.6" do
+    expect(subject[:family]).to eq("alpine")
+    expect(subject[:release]).to match(/^3\.6\./)
+  end
+end
+
+describe "Packages" do
   [
     "bash",
     "curl",

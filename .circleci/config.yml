@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: sicz/dockerspec:17.04.24
+      - image: sicz/dockerspec:3.6
     working_directory: ~/docker-simple-ca
     environment:
       - MAKEFLAGS=--no-print-directory

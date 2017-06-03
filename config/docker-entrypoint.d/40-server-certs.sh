@@ -1,7 +1,5 @@
 #!/bin/bash
 
-debug0 "Processing $(basename ${DOCKER_ENTRYPOINT:-$0})"
-
 ################################################################################
 # Initialize CA's directory
 if [ ! -e /var/lib/simple-ca/serial ]; then
@@ -33,7 +31,7 @@ else
 fi
 
 ################################################################################
-# Only create CA private key, passphrase and certificate
+# Only create CA private key, passphrase and certificate and then exit
 if [ "$1" = "secrets" ]; then
   # Save CA web server password
   if [ ! -e ${CA_USER_PWD_FILE} ]; then
@@ -57,7 +55,7 @@ if [ ! -e "${SERVER_CRT}" ]; then
     tr "\n" ","
   )
   # Create private key and certificate
-  # NOTE: lighttpd does not support server private key passphrase
+  # TODO: lighttpd does not support server private key passphrase
   openssl req \
     -subj "/${SERVER_CRT_SUBJECT}" \
     -nodes \

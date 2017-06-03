@@ -31,7 +31,7 @@ git clone https://github.com/sicz/docker-simple-ca
 
 Use command `make` to simplify Docker container development tasks:
 ```bash
-make all        # Destroy running container, build new image, run container and show logs
+make all        # Destroy running container, build new image and run tests
 make build      # Build new image
 make refresh    # Refresh Dockerfile
 make rebuild    # Build new image without caching
@@ -52,7 +52,7 @@ make clean      # Destroy running container and delete CA secrets
 With default configuration `simple-ca` listens on TCP port 443 and sends all
 logs to Docker console.
 
-After first run is directory `secrets` populated with CA certificate and secrets:
+After first run, directory `secrets` is populated with CA certificate and secrets:
 * `ca_crt.pem` - CA certificate
 * `ca_key.pem` - encrypted CA private key
 * `ca_key.pwd` - CA private key passphrase
@@ -90,13 +90,13 @@ You can start with this sample `docker-compose.yml` file:
 ```yaml
 services:
   simple-ca:
-    image: sicz/simple-ca:3.5
+    image: sicz/simple-ca
     ports:
       - 9443:443
     volumes:
       - secrets:/var/lib/simple-ca/secrets
   lighttpd:
-    image: sicz/lighttpd:3.5
+    image: sicz/lighttpd
     ports:
       - 8080:80
       - 8443:443

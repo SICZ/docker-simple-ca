@@ -11,7 +11,7 @@ DOCKER_SHELL_CMD	= /docker-entrypoint.sh bash
 .PHONY: all build rebuild deploy run up destroy rm down start stop restart
 .PHONY: status logs shell refresh test clean secrets
 
-all: destroy build secrets deploy logs-tail
+all: destroy build secrets deploy logs test
 build: docker-build
 rebuild: docker-rebuild
 deploy run up: docker-deploy
@@ -25,6 +25,12 @@ logs-tail: docker-logs-tail
 shell: docker-shell
 refresh: docker-refresh
 test: docker-test
+	@SECRETS="$$(ls secrets/test_* 2>/dev/null | tr '\n' ' ')"; \
+	if [ -n "$${SECRETS}" ]; then \
+		$(ECHO) "Removing secrets: $${SECRETS}"; \
+		chmod u+w secrets; \
+		rm -f $${SECRETS}; \
+	fi
 
 clean: destroy
 	@SECRETS="$$(ls secrets/ca_* 2>/dev/null | tr '\n' ' ')"; \

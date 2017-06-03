@@ -1,7 +1,5 @@
 #!/bin/bash
 
-debug0 "Processing $(basename ${DOCKER_ENTRYPOINT:-$0})"
-
 ################################################################################
 # OpenSSL random file
 export RANDFILE=/var/lib/simple-ca/.rnd
@@ -43,8 +41,8 @@ else
   : ${CA_KEY_PWD_FILE:=/var/lib/simple-ca/secrets/ca_key.pwd}
 fi
 
-# Paths must be hardcoded in openssl.cnf because LibreSSL removed support
-# for ${ENV::VARIABLE} in openssl.cnf
+# Paths in openssl.cnf must be hardcoded because LibreSSL removed support
+# for ${ENV::VARIABLE}
 sed -i -E \
   -e "s|%%CA_CRT%%|${CA_CRT}|" \
   -e "s|%%CA_KEY%%|${CA_KEY}|" \
@@ -62,7 +60,7 @@ else
   # Permissioins will be set later
 fi
 
-# Export variables for simple-ca.sh CGI scripts
+# Export variables for CGI scripts
 export CA_CRT CA_KEY CA_KEY_PWD_FILE
 
 ################################################################################
@@ -83,7 +81,7 @@ else
   : ${SERVER_KEY:=/var/lib/simple-ca/secrets/ca_server_key.pem}
 fi
 
-# NOTE: lighttpd does not support server private key passphrase
+# TODO: lighttpd does not support server private key passphrase
 # # Default server private key passphrase file location
 # if [ -e /run/secrets/ca_server_key.pwd ]; then
 #   : ${SERVER_KEY_PWD_FILE:=/run/secrets/ca_server_key.pwd}
@@ -105,6 +103,7 @@ export SERVER_CRT SERVER_KEY
 
 ################################################################################
 # CA user passowrd
+info "Using CA web server user ${CA_USER}"
 if [ -e ${CA_USER_PWD_FILE} ]; then
   info "Using CA web server password ${CA_USER_PWD_FILE}"
   CA_USER_PWD=$(cat ${CA_USER_PWD_FILE})
