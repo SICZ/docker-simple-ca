@@ -1,17 +1,31 @@
-ALPINE_VERSION		?= latest
+################################################################################
 
-DOCKER_PROJECT		= sicz
+BASEIMAGE_NAME		= $(DOCKER_PROJECT)/lighttpd
+BASEIMAGE_TAG		= 3.6
+
+################################################################################
+
+DOCKER_PROJECT		?= sicz
 DOCKER_NAME		= simple-ca
-DOCKER_TAG		= $(ALPINE_VERSION)
+DOCKER_TAG		= $(BASEIMAGE_TAG)
+DOCKER_TAGS		?= latest
+DOCKER_DESCRIPTION	= A simple automated Certificate Authority
+DOCKER_PROJECT_URL	= https://github.com/sicz/docker-simple-ca
 
-DOCKER_RUN_OPTS		+= -v $(CURDIR)/secrets:/var/lib/simple-ca/secrets \
-			   -v /var/run/docker.sock:/var/run/docker.sock
-DOCKER_SHELL_CMD	= /docker-entrypoint.sh bash
+DOCKER_RUN_OPTS		+= -v /var/run/docker.sock:/var/run/docker.sock \
+			   -v $(abspath $(DOCKER_HOME_DIR))/secrets:/var/lib/simple-ca/secrets \
+			   -e SERVER_CRT_SUBJECT=CN=sicz_simple_ca
 
-.PHONY: all build rebuild deploy run up destroy rm down start stop restart
-.PHONY: status logs shell refresh test clean secrets
+DOCKER_SHELL_CMD	= /docker-entrypoint.sh /bin/bash
 
-all: destroy build secrets deploy logs test
+DOCKER_SUBDIR		+= devel
+
+################################################################################
+
+.PHONY: all build rebuild deploy run up destroy down rm start stop restart
+.PHONY: status logs shell refresh test clean clean-all
+
+all: destroy clean build deploy logs test
 build: docker-build
 rebuild: docker-rebuild
 deploy run up: docker-deploy
@@ -40,10 +54,26 @@ clean: destroy
 		rm -f $${SECRETS}; \
 	fi
 
-secrets: clean
+clean-all: clean
+	@for SUBDIR in $(DOCKER_SUBDIR); do \
+		cd $(abspath $(DOCKER_HOME_DIR))/$${SUBDIR}; \
+		$(MAKE) clean; \
+	done
+
+################################################################################
+
+.PHONY:  secrets
+
+secrets: clean-all
 	@$(MAKE) run DOCKER_RUN_CMD="secrets"; \
 	sleep 1; \
 	${MAKE} logs; \
 	${MAKE} destroy
 
-include ../Mk/docker.container.mk
+################################################################################
+
+DOCKER_HOME_DIR		?= .
+DOCKER_MK_DIR		?= $(DOCKER_HOME_DIR)/../Mk
+include $(DOCKER_MK_DIR)/docker.container.mk
+
+################################################################################

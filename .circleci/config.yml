@@ -1,8 +1,8 @@
 version: 2
 jobs:
-  build:
+  build: &build
     docker:
-      - image: sicz/dockerspec:3.6
+      - image: sicz/dockerspec@sha256:7e946e59349aae5d9f5c8639fd02d76c9a9e8de1e6dd03013d217f381a033ec2
     working_directory: ~/docker-simple-ca
     environment:
       - MAKEFLAGS=--no-print-directory
@@ -13,22 +13,33 @@ jobs:
             curl -sSL https://github.com/SICZ/Mk/archive/master.tar.gz | tar -xzf -
             mv Mk-master ~/Mk
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 17.06.0-ce
       - run:
           name: Remote Docker engine version
           command: |
             docker version
       - run:
-          name: Build Docker image
+          name: Build and test latest Docker image
           command: |
-            make rebuild
+            make ci-rebuild-and-test DOCKER_TEST_CMD=rspec
       - run:
-          name: Run Docker container
+          name: Build and test development Docker image
+          working_directory: devel
           command: |
-            make secrets
-            make run
-            make logs
-      - run:
-          name: Run tests
+            make ci-rebuild-and-test DOCKER_TEST_CMD=rspec
+      - deploy:
+          name: Push latest Docker image to Docker Hub
           command: |
-            env DOCKER_CONTAINER_ID=$(cat .container_id) rspec --format doc
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWD}
+              make docker-push
+            fi
+      - deploy:
+          name: Push development Docker image to Docker Hub
+          working_directory: devel
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWD}
+              make docker-push
+            fi

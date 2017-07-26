@@ -30,14 +30,15 @@ else
   info "Using CA certificate ${CA_CRT}"
 fi
 
+# Save CA web server password
+if [ ! -e ${CA_USER_PWD_FILE} ]; then
+  info "Saving CA web server user password to ${CA_USER_PWD_FILE}"
+  echo "${CA_USER_PWD}" > ${CA_USER_PWD_FILE}
+fi
+
 ################################################################################
 # Only create CA private key, passphrase and certificate and then exit
 if [ "$1" = "secrets" ]; then
-  # Save CA web server password
-  if [ ! -e ${CA_USER_PWD_FILE} ]; then
-    info "Saving CA web server user password to ${CA_USER_PWD_FILE}"
-    echo "${CA_USER_PWD}" > ${CA_USER_PWD_FILE}
-  fi
   exit
 fi
 

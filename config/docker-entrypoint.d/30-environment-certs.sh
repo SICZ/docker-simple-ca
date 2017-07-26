@@ -6,7 +6,7 @@ export RANDFILE=/var/lib/simple-ca/.rnd
 
 ################################################################################
 # Default CA user name and realm
-: ${CA_USER:=agent007}
+: ${CA_USER:=requestor}
 : ${CA_USER_REALM:=Docker Simple CA}
 
 # Default CA user password file location

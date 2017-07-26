@@ -94,7 +94,7 @@ describe "Certificate authority" do
             -keyout #{key} |
           curl -fs \
             --cacert /var/lib/simple-ca/secrets/ca_crt.pem \
-            --user agent007:`cat /var/lib/simple-ca/secrets/ca_user.pwd` \
+            --user requestor:`cat /var/lib/simple-ca/secrets/ca_user.pwd` \
             --data-binary @- \
             --output #{crt} \
             'https://localhost/sign?dn=CN=test.local&dns=test.local,localhost&ip=192.0.2.1,127.0.0.1&rid=1.2.3'

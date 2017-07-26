@@ -56,7 +56,7 @@ After first run, directory `secrets` is populated with CA certificate and secret
 * `ca_crt.pem` - CA certificate
 * `ca_key.pem` - encrypted CA private key
 * `ca_key.pwd` - CA private key passphrase
-* `ca_user.pwd` - password for user `agent007`
+* `ca_user.pwd` - password for user `requestor`
 * `ca_server.pem` - web server certificate nad private key
 
 How to obtain CA certificate:
@@ -73,7 +73,7 @@ openssl req -newkey rsa:2048 \
   -passout "pass:${SERVER_KEY_PWD}" |
 curl \
   --cacert ca_crt.pem \
-  --user "agent007:$(cat ca_user.pwd)"
+  --user "requestor:$(cat ca_user.pwd)"
   --data-binary @- \
   --output server_crt.pem \
   "https://simple-ca/sign?dn=CN=${HOSTNAME}&dns=${SERVER_CRT_NAMES}&ip=${SERVER_CRT_IP}&oid=${SERVER_CRT_OID}"
@@ -83,7 +83,7 @@ curl \
 
 At first populate `secrets` directory with CA secrets:
 ```bash
-docker run -v $PWD/secrets:/var/lib/simple-ca/secrets sicz/simple-ca:3.5 secrets
+docker run -v $PWD/secrets:/var/lib/simple-ca/secrets sicz/simple-ca secrets
 ```
 
 You can start with this sample `docker-compose.yml` file:
@@ -94,19 +94,19 @@ services:
     ports:
       - 9443:443
     volumes:
-      - secrets:/var/lib/simple-ca/secrets
+      - ./secrets:/var/lib/simple-ca/secrets
   lighttpd:
     image: sicz/lighttpd
     ports:
       - 8080:80
       - 8443:443
     volumes:
-      - secrets/ca_crt.pem:/run/secrets/ca_crt.pem
-      - secrets/ca_user.pwd:/run/secrets/ca_user.pwd
-      - config/server.conf:/etc/lighttpd/server/conf
-      - www:/var/www
+      - ./secrets/ca_crt.pem:/run/secrets/ca_crt.pem
+      - ./secrets/ca_user.pwd:/run/secrets/ca_user.pwd
+      - ./config/server.conf:/etc/lighttpd/server.conf
+      - ./www:/var/www
     environment:
-      - SIMPLE_CA_URL=https://simple-ca
+      - SIMPLE_CA_URL=https://simple-ca:9443
       - SERVER_CRT_NAME=my-service.my-domain
 ```
 
