@@ -52,8 +52,6 @@ sed -i -E \
 if [ -e "${CA_KEY_PWD_FILE}" ]; then
   info "Using CA private key passphrase ${CA_KEY_PWD_FILE}"
 else
-  info "env"
-  env | sort
   info "Creating random CA private key passphrase"
   mkdir -p $(dirname ${CA_KEY_PWD_FILE})
   openssl rand -hex 32 > ${CA_KEY_PWD_FILE}
