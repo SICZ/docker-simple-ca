@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+### DIE ########################################################################
 
 die() {
   echo "HTTP/1.1 500 Internal Server Error"
@@ -10,6 +10,8 @@ die() {
   exit 1
 }
 
+### BAD_REQUEST ################################################################
+
 badRequest() {
   echo "HTTP/1.1 400 Bad Request"
   echo "Content-Type: text/plain"
@@ -17,6 +19,8 @@ badRequest() {
   echo "$*"
   exit 1
 }
+
+### NOT_FOUND ##################################################################
 
 notFound() {
   echo "HTTP/1.1 404 Not Found"
@@ -26,11 +30,7 @@ notFound() {
   exit 1
 }
 
-if [ ! -d "/var/lib/simple-ca" ]; then
-  die "CA not found"
-fi
-cd "${CA_DIR}"
-export RANDFILE=/var/lib/simple-ca/.rnd
+### SIGN #######################################################################
 
 sign() {
   local CRT=$1
@@ -61,8 +61,11 @@ sign() {
 
   [ -z "${DN}" ] && die "dn=<DN> is mandatory"
 
+  # OpenSSL random file location
+  export RANDFILE=./.rnd
+
   exec 100</etc/ssl/openssl.cnf &&
-  flock 100 &&
+  flock -x 100 &&
   openssl ca \
     -batch \
     -passin "file:${CA_KEY_PWD_FILE}" \
@@ -73,7 +76,7 @@ sign() {
     -extfile <(
       echo "subjectAltName=@alt_names"
       echo "[ alt_names ]"
-      IFS="," # Split strings at ','
+      IFS="," # Split string at ','
       i=1
       for ALT_DNS in ${DNS}; do
         [ -n "${ALT_DNS}" ] || continue
@@ -94,24 +97,37 @@ sign() {
       done
       unset IFS
     )
+  flock -u 100
 }
 
+### MAIN #######################################################################
+
+# Switch to CA directory
+if [ -z "${CA_DIR}" -o ! -d "${CA_DIR}" ]; then
+  die "CA dir '${CA_DIR}' not found"
+fi
+cd "${CA_DIR}"
+
+# Handle URI
 case "${PATH_INFO}" in
   /sign)
-    CRT=/tmp/crt-$$.pem
+    CRT=/tmp/$$.crt
     trap "rm -f ${CRT}" EXIT
     ERR=$(sign "${CRT}" 2>&1) || die "${ERR}"
     OUT="${CRT}"
     ;;
-  /ca.pem)
-    OUT="${CA_CRT}"
+  /ca.crt)
+    OUT="${CA_CRT_FILE}"
     ;;
   *)
     notFound
     ;;
 esac
 
+# Return certificate
 echo "HTTP/1.1 200 OK"
 echo "Content-Type: text/plain"
 echo
 cat "${OUT}"
+
+################################################################################
