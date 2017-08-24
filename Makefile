@@ -1,79 +1,161 @@
-################################################################################
+### BASE_IMAGE #################################################################
 
-BASEIMAGE_NAME		= $(DOCKER_PROJECT)/lighttpd
-BASEIMAGE_TAG		= 3.6
+BASE_IMAGE_NAME		?= $(DOCKER_PROJECT)/lighttpd
+BASE_IMAGE_TAG		?= 3.6
 
-################################################################################
+### DOCKER_IMAGE ###############################################################
 
 DOCKER_PROJECT		?= sicz
-DOCKER_NAME		= simple-ca
-DOCKER_TAG		= $(BASEIMAGE_TAG)
-DOCKER_TAGS		?= latest
-DOCKER_DESCRIPTION	= A simple automated Certificate Authority
-DOCKER_PROJECT_URL	= https://github.com/sicz/docker-simple-ca
+DOCKER_PROJECT_DESC	?= A simple automated Certificate Authority
+DOCKER_PROJECT_URL	?= https://github.com/sicz/docker-simple-ca
 
-DOCKER_RUN_OPTS		+= -v /var/run/docker.sock:/var/run/docker.sock \
-			   -v $(abspath $(DOCKER_HOME_DIR))/secrets:/var/lib/simple-ca/secrets \
-			   -e SERVER_CRT_SUBJECT=CN=sicz_simple_ca
+DOCKER_NAME		?= simple-ca
+DOCKER_IMAGE_TAG	?= $(BASE_IMAGE_TAG)
+DOCKER_IMAGE_TAGS	?= latest
 
-DOCKER_SHELL_CMD	= /docker-entrypoint.sh /bin/bash
+### DOCKER_VERSIONS ###########################################################
 
-DOCKER_SUBDIR		+= devel
+DOCKER_VERSIONS		?= latest devel
 
-################################################################################
+### BUILD ######################################################################
 
-.PHONY: all build rebuild deploy run up destroy down rm start stop restart
-.PHONY: status logs shell refresh test clean clean-all
+# Allows a change of the build/restore targets to the docker-tag if
+# the development version is the same as the production version
+DOCKER_BUILD_TARGET	?= docker-build
+DOCKER_REBUILD_TARGET	?= docker-rebuild
 
-all: destroy clean build deploy logs test
-build: docker-build
-rebuild: docker-rebuild
-deploy run up: docker-deploy
-destroy down rm: docker-destroy
-start: docker-start
-stop: docker-stop
-restart: docker-stop docker-start
-status: docker-status
+### DOCKER_EXECUTOR ############################################################
+
+# Use Docker Compose executor
+DOCKER_EXECUTOR		?= compose
+
+# Docker Compose variables
+COMPOSE_VARS		+= SERVER_CRT_HOST
+
+# Subject aletrnative name in certificate
+SERVER_CRT_HOST		+= simple-ca.local
+
+### DOCKER_MAKE_VARS ###########################################################
+
+MAKE_VARS		?= GITHUB_MAKE_VARS \
+			   BASE_IMAGE_MAKE_VARS \
+			   DOCKER_IMAGE_MAKE_VARS \
+			   BUILD_MAKE_VARS \
+			   BUILD_TARGETS_MAKE_VARS \
+			   EXECUTOR_MAKE_VARS \
+			   CONFIG_MAKE_VARS \
+			   SHELL_MAKE_VARS \
+			   DOCKER_REGISTRY_MAKE_VARS \
+			   DOCKER_VERSION_MAKE_VARS
+
+define BUILD_TARGETS_MAKE_VARS
+DOCKER_BUILD_TARGET:	$(DOCKER_BUILD_TARGET)
+DOCKER_REBUILD_TARGET:	$(DOCKER_REBUILD_TARGET)
+endef
+export BUILD_TARGETS_MAKE_VARS
+
+define CONFIG_MAKE_VARS
+SERVER_CRT_HOST:	$(SERVER_CRT_HOST)
+endef
+export CONFIG_MAKE_VARS
+
+### DOCKER_VERSION_TARGETS #####################################################
+
+DOCKER_ALL_VERSIONS_TARGETS ?= build rebuild ci clean
+
+### MAKE_TARGETS #############################################################
+
+# Build and test image
+.PHONY: all ci
+all: build deploy logs test
+ci:  all clean
+
+# Display make variables
+.PHONY: makevars vars
+makevars vars: display-makevars
+
+### BUILD_TARGETS ##############################################################
+
+# Build Docker image with cached layers
+.PHONY: build
+build: $(DOCKER_BUILD_TARGET)
+	@true
+
+# Build Docker image without cached layers
+.PHONY: rebuild
+rebuild: $(DOCKER_REBUILD_TARGET)
+	@true
+
+### EXECUTOR_TARGETS ###########################################################
+
+# Display Docker COmpose/Swarm configuration file
+.PHONY: config-file
+config-file: display-config-file
+
+# Destroy containers and then start fresh ones
+.PHONY: deploy run up
+deploy run up:
+	@set -e; \
+	$(MAKE) destroy start
+
+# Create containers
+.PHONY: create
+create: docker-create
+	@true
+
+# Start containers
+.PHONY: start
+start: create docker-start
+
+# Wait to container start
+.PHONY: wait
+wait: start docker-wait
+
+# List running containers
+.PHONY: ps
+ps: docker-ps
+
+# Display containers logs
+.PHONY: logs
 logs: docker-logs
-logs-tail: docker-logs-tail
-shell: docker-shell
-refresh: docker-refresh
-test: docker-test
-	@SECRETS="$$(ls secrets/test_* 2>/dev/null | tr '\n' ' ')"; \
-	if [ -n "$${SECRETS}" ]; then \
-		$(ECHO) "Removing secrets: $${SECRETS}"; \
-		chmod u+w secrets; \
-		rm -f $${SECRETS}; \
-	fi
 
-clean: destroy
-	@SECRETS="$$(ls secrets/ca_* 2>/dev/null | tr '\n' ' ')"; \
-	if [ -n "$${SECRETS}" ]; then \
-		$(ECHO) "Removing secrets: $${SECRETS}"; \
-		chmod u+w secrets; \
-		rm -f $${SECRETS}; \
-	fi
+# Follow containers logs
+.PHONY: logs-tail tail
+logs-tail tail: docker-logs-tail
 
-clean-all: clean
-	@for SUBDIR in $(DOCKER_SUBDIR); do \
-		cd $(abspath $(DOCKER_HOME_DIR))/$${SUBDIR}; \
-		$(MAKE) clean; \
-	done
+# Run shell in the container
+.PHONY: shell sh
+shell sh: start docker-shell
 
-################################################################################
+# Run tests for current executor configuration
+.PHONY: test
+test: start docker-test
 
-.PHONY:  secrets
+# Run shell in test container
+.PHONY: test-shell tsh
+test-shell tsh:
+	@$(MAKE) test TEST_CMD=/bin/bash
 
-secrets: clean-all
-	@$(MAKE) run DOCKER_RUN_CMD="secrets"; \
-	sleep 1; \
-	${MAKE} logs; \
-	${MAKE} destroy
+# Stop containers
+.PHONY: stop
+stop: docker-stop
 
-################################################################################
+# Restart containers
+.PHONY: restart
+restart: stop start
 
-DOCKER_HOME_DIR		?= .
-DOCKER_MK_DIR		?= $(DOCKER_HOME_DIR)/../Mk
-include $(DOCKER_MK_DIR)/docker.container.mk
+# Delete containers
+.PHONY: destroy down rm
+destroy down rm: docker-destroy
+
+# Clean project
+.PHONY: clean
+clean: docker-clean
+
+### MAKE_TARGETS ###############################################################
+
+PROJECT_DIR		?= $(CURDIR)
+MK_DIR			?= $(PROJECT_DIR)/../Mk
+include $(MK_DIR)/docker.image.mk
 
 ################################################################################
