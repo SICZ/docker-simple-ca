@@ -4,10 +4,7 @@
 *~
 
 # Info about running containers
-.container_id
+.docker-*
 
-# Local Makefile
-docker.local.mk
-
-# Simple-CA secrets
+# Simple CA secrets
 secrets
