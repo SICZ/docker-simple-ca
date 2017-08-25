@@ -2,7 +2,7 @@
 
 ################################################################################
 
-# Simple CA requires to have all certificates and secrets in /var/lib/simple-ca/secrets
+# Simple CA requires to have all certificates and secrets in /var/lib/simple-ca
 SIMPLE_CA_DIR=/var/lib/simple-ca
 CA_CRT_DIR=${SIMPLE_CA_DIR}/secrets
 CA_KEY_DIR=${SIMPLE_CA_DIR}/secrets
@@ -52,6 +52,15 @@ if [ -e /run/secrets/ca.pwd ]; then
   : ${CA_KEY_PWD_FILE:=/run/secrets/ca.pwd}
 else
   : ${CA_KEY_PWD_FILE:=${CA_KEY_DIR}/ca.pwd}
+fi
+
+################################################################################
+
+# Default server private key passphrase file location
+if [ -e /run/secrets/server.pwd ]; then
+  : ${SERVER_KEY_PWD_FILE:=/run/secrets/server.pwd}
+else
+  : ${SERVER_KEY_PWD_FILE:=${CA_KEY_DIR}/server.pwd}
 fi
 
 ################################################################################

@@ -75,7 +75,6 @@ if [ ! -e ${CA_USER_NAME_FILE} ]; then
   info "Saving CA user name to ${CA_USER_NAME_FILE}"
   echo "${CA_USER_NAME}" > ${CA_USER_NAME_FILE}
 fi
-chmod 440 ${CA_USER_NAME_FILE}
 
 # Get CA user passowrd
 if [ -e ${CA_USER_PWD_FILE} ]; then
@@ -89,19 +88,39 @@ if [ ! -e ${CA_USER_PWD_FILE} ]; then
   info "Saving CA user password to ${CA_USER_PWD_FILE}"
   echo "${CA_USER_NAME_PWD}" > ${CA_USER_PWD_FILE}
 fi
-chmod 440 ${CA_USER_PWD_FILE}
+
+################################################################################
+
+# Get server private key passphrase
+if [ -e "${SERVER_KEY_PWD_FILE}" ]; then
+  info "Using server private key passphrase from ${SERVER_KEY_PWD_FILE}"
+  SERVER_KEY_PWD=$(cat ${SERVER_KEY_PWD_FILE})
+else
+  info "Creating random server private key passphrase"
+  SERVER_KEY_PWD=$(openssl rand -hex 32)
+fi
+if [ ! -e ${SERVER_KEY_PWD_FILE} ]; then
+  info "Saving CA user password to ${SERVER_KEY_PWD_FILE}"
+  echo "${SERVER_KEY_PWD}" > ${SERVER_KEY_PWD_FILE}
+fi
 
 ################################################################################
 
 # Set permissions
 debug "Changing owner of ${SIMPLE_CA_DIR} to ${LIGHTTPD_FILE_OWNER}"
 chown -R ${LIGHTTPD_FILE_OWNER} ${SIMPLE_CA_DIR}
-debug "Changing mode of ${SERVER_CRT_FILE} to 444"
+debug "Changing mode of ${CA_CRT_FILE} to 444"
 chmod 444 ${CA_CRT_FILE}
 debug "Changing mode of ${CA_KEY_FILE} to 440"
 chmod 440 ${CA_KEY_FILE}
 debug "Changing mode of ${CA_KEY_PWD_FILE} to 440"
 chmod 440 ${CA_KEY_PWD_FILE}
+debug "Changing mode of ${CA_USER_NAME_FILE} to 440"
+chmod 440 ${CA_USER_NAME_FILE}
+debug "Changing mode of ${CA_USER_PWD_FILE} to 440"
+chmod 440 ${CA_USER_PWD_FILE}
+debug "Changing mode of ${SERVER_KEY_PWD_FILE} to 440"
+chmod 440 ${SERVER_KEY_PWD_FILE}
 
 ################################################################################
 
@@ -120,16 +139,7 @@ export SIMPLE_CA_DIR CA_KEY_PWD_FILE CA_CRT_FILE CA_USER_NAME CA_USER_REALM
 
 # Create server private key and certificate
 if [ ! -e "${SERVER_CRT_FILE}" ]; then
-
-  # Get server private key passphrase
   info "Creating server private key file ${SERVER_KEY_FILE}"
-  if [ -e "${SERVER_KEY_PWD_FILE}" ]; then
-    info "Using server private key passphrase from ${SERVER_KEY_PWD_FILE}"
-    SERVER_KEY_PWD=$(cat ${SERVER_KEY_PWD_FILE})
-  else
-    info "Creating random server private key passphrase"
-    SERVER_KEY_PWD=$(openssl rand -hex 32)
-  fi
 
   # Get server certificate attributes
   info "Creating server certificate file ${SERVER_CRT_FILE}"
