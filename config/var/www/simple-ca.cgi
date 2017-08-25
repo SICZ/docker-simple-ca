@@ -108,6 +108,9 @@ if [ -z "${CA_DIR}" -o ! -d "${CA_DIR}" ]; then
 fi
 cd "${CA_DIR}"
 
+# Set umask for OpenSSL
+umask 0027
+
 # Handle URI
 case "${PATH_INFO}" in
   /sign)
