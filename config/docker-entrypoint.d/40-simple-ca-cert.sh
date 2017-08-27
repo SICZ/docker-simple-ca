@@ -26,6 +26,7 @@ if [ ! -e ${CA_KEY_FILE} -o ! -e ${CA_CRT_FILE} ]; then
     info "Creating random CA private key passphrase file ${CA_KEY_PWD_FILE}"
     mkdir -p $(dirname ${CA_KEY_PWD_FILE})
     openssl rand -hex 32 > ${CA_KEY_PWD_FILE}
+    chmod ${CA_KEY_FILE_MODE} ${CA_KEY_PWD_FILE}
   fi
   info "Creating CA certificate file ${CA_CRT_FILE}"
   openssl req -x509 -days 36520 \
@@ -34,7 +35,14 @@ if [ ! -e ${CA_KEY_FILE} -o ! -e ${CA_CRT_FILE} ]; then
     -keyout ${CA_KEY_FILE} \
     -passout file:${CA_KEY_PWD_FILE} \
     -out ${CA_CRT_FILE}
-  chmod o-rwx ${CA_KEY_FILE}
+  if [ -n "${SERVER_CRT_FILE_OWNER}" ]; then
+    chown ${SERVER_CRT_FILE_OWNER} ${CA_CRT_FILE}
+  fi
+  chmod ${CA_CRT_FILE_MODE} ${CA_CRT_FILE}
+  if [ -n "${SERVER_KEY_FILE_OWNER}" ]; then
+    chown ${SERVER_KEY_FILE_OWNER} ${CA_KEY_FILE}
+  fi
+  chmod ${CA_KEY_FILE_MODE} ${CA_KEY_FILE}
 else
   info "Using CA private key file ${CA_KEY_FILE}"
   info "Using CA certificate file ${CA_CRT_FILE}"
@@ -48,16 +56,12 @@ if [ "$(dirname ${CA_CRT_FILE})" != "${SIMPLE_CA_DIR}/secrets" ]; then
   if [ ! -e "${SIMPLE_CA_DIR}/secrets/ca.crt" ]; then
     debug "Creating link ${SIMPLE_CA_DIR}/secrets/ca.crt => ${CA_CRT_FILE}"
     ln -s ${CA_CRT_FILE} ${SIMPLE_CA_DIR}/secrets/ca.crt
-    debug "Changing owner of ${CA_CRT_FILE} to ${LIGHTTPD_FILE_OWNER}"
-    chown ${LIGHTTPD_FILE_OWNER} ${CA_CRT_FILE}
   fi
 fi
 if [ "${CA_KEY_FILE}" != "${SIMPLE_CA_DIR}/secrets/ca.key" ]; then
   if [ ! -e "${SIMPLE_CA_DIR}/secrets/ca.key" ]; then
     debug "Creating link ${SIMPLE_CA_DIR}/secrets/ca.key => ${CA_KEY_FILE}"
     ln -s ${CA_KEY_FILE} ${SIMPLE_CA_DIR}/secrets/ca.key
-    debug "Changing owner of ${CA_KEY_FILE} to ${LIGHTTPD_FILE_OWNER}"
-    chown ${LIGHTTPD_FILE_OWNER} ${CA_KEY_FILE}
   fi
 fi
 
@@ -74,6 +78,7 @@ fi
 if [ ! -e ${CA_USER_NAME_FILE} ]; then
   info "Saving CA user name to ${CA_USER_NAME_FILE}"
   echo "${CA_USER_NAME}" > ${CA_USER_NAME_FILE}
+  chmod ${CA_KEY_FILE_MODE} ${CA_USER_NAME_FILE}
 fi
 
 # Get CA user passowrd
@@ -87,6 +92,7 @@ fi
 if [ ! -e ${CA_USER_PWD_FILE} ]; then
   info "Saving CA user password to ${CA_USER_PWD_FILE}"
   echo "${CA_USER_NAME_PWD}" > ${CA_USER_PWD_FILE}
+  chmod ${CA_KEY_FILE_MODE} ${CA_USER_PWD_FILE}
 fi
 
 ################################################################################
@@ -102,6 +108,8 @@ fi
 if [ ! -e ${SERVER_KEY_PWD_FILE} ]; then
   info "Saving CA user password to ${SERVER_KEY_PWD_FILE}"
   echo "${SERVER_KEY_PWD}" > ${SERVER_KEY_PWD_FILE}
+  debug "Changing mode of ${SERVER_KEY_PWD_FILE} to ${SERVER_KEY_FILE_MODE}"
+  chmod ${SERVER_KEY_FILE_MODE} ${SERVER_KEY_PWD_FILE}
 fi
 
 ################################################################################
@@ -109,18 +117,6 @@ fi
 # Set permissions
 debug "Changing owner of ${SIMPLE_CA_DIR} to ${LIGHTTPD_FILE_OWNER}"
 chown -R ${LIGHTTPD_FILE_OWNER} ${SIMPLE_CA_DIR}
-debug "Changing mode of ${CA_CRT_FILE} to 444"
-chmod 444 ${CA_CRT_FILE}
-debug "Changing mode of ${CA_KEY_FILE} to 440"
-chmod 440 ${CA_KEY_FILE}
-debug "Changing mode of ${CA_KEY_PWD_FILE} to 440"
-chmod 440 ${CA_KEY_PWD_FILE}
-debug "Changing mode of ${CA_USER_NAME_FILE} to 440"
-chmod 440 ${CA_USER_NAME_FILE}
-debug "Changing mode of ${CA_USER_PWD_FILE} to 440"
-chmod 440 ${CA_USER_PWD_FILE}
-debug "Changing mode of ${SERVER_KEY_PWD_FILE} to 440"
-chmod 440 ${SERVER_KEY_PWD_FILE}
 
 ################################################################################
 
@@ -143,7 +139,7 @@ if [ ! -e "${SERVER_CRT_FILE}" ]; then
 
   # Get server certificate attributes
   info "Creating server certificate file ${SERVER_CRT_FILE}"
-  SERVER_CRT_REQ_HOST="${SERVER_CRT_HOST},${HOSTNAME},localhost"
+  SERVER_CRT_REQ_HOST="${SERVER_CRT_HOST},${DOCKER_CONTAINER_NAME},${HOSTNAME},localhost"
   SERVER_CRT_REQ_IP="${SERVER_CRT_IP},$(
     ifconfig |
     grep "inet addr:" |
@@ -169,8 +165,22 @@ if [ ! -e "${SERVER_CRT_FILE}" ]; then
   egrep -v "^(HTTP/.*|Content-Type:.*|)$" > ${SERVER_CRT_FILE}
 
   # Set permissions
-  debug "Changing owner of ${SIMPLE_CA_DIR} to ${LIGHTTPD_FILE_OWNER}"
-  chown -R ${LIGHTTPD_FILE_OWNER} ${SIMPLE_CA_DIR}
+  if [ -n "${LIGHTTPD_FILE_OWNER}" ]; then
+    debug "Changing owner of ${SIMPLE_CA_DIR} to ${LIGHTTPD_FILE_OWNER}"
+    chown -R ${LIGHTTPD_FILE_OWNER} ${SIMPLE_CA_DIR}
+  fi
+  if [ -n "${SERVER_CRT_FILE_OWNER}" ]; then
+    debug "Changing owner of ${SERVER_CRT_FILE} to ${SERVER_CRT_FILE_OWNER}"
+    chown ${SERVER_CRT_FILE_OWNER} ${SERVER_CRT_FILE}
+  fi
+  debug "Changing mode of ${SERVER_CRT_FILE} to ${SERVER_CRT_FILE_MODE}"
+  chmod ${SERVER_CRT_FILE_MODE} ${SERVER_CRT_FILE}
+  if [ -n "${SERVER_KEY_FILE_OWNER}" ]; then
+    debug "Changing owner of ${SERVER_KEY_FILE} to ${SERVER_KEY_FILE_OWNER}"
+    chown ${SERVER_KEY_FILE_OWNER} ${SERVER_KEY_FILE}
+  fi
+  debug "Changing mode of ${SERVER_KEY_FILE} to ${SERVER_KEY_FILE_MODE}"
+  chmod ${SERVER_KEY_FILE_MODE} ${SERVER_KEY_FILE}
 fi
 
 ################################################################################

@@ -1,6 +1,6 @@
 ### BASE_IMAGE #################################################################
 
-BASE_IMAGE_TAG		?= edge
+# BASE_IMAGE_TAG	?= 1.4.45
 
 ### DOCKER_IMAGE ###############################################################
 
@@ -8,9 +8,12 @@ DOCKER_IMAGE_TAGS	?=
 
 ### BUILD ######################################################################
 
+SIMPLE_CA_VERSION	?= 0.0.1
+
 # If image configuration variables are not defined, it is assumed that
 # the development image is the same as the production image
-BUILD_CONFIG		?= $(BASE_IMAGE_TAG)
+BUILD_CONFIG		?= $(BASE_IMAGE_TAG) \
+			   $(SIMPLE_CA_VERSION)
 
 ifeq ($(strip $(BUILD_CONFIG)),)
 DOCKER_BUILD_TARGET	?= docker-tag

@@ -1,7 +1,7 @@
 ### BASE_IMAGE #################################################################
 
 BASE_IMAGE_NAME		?= $(DOCKER_PROJECT)/lighttpd
-BASE_IMAGE_TAG		?= 3.6
+BASE_IMAGE_TAG		?= 1.4.45
 
 ### DOCKER_IMAGE ###############################################################
 
@@ -10,14 +10,19 @@ DOCKER_PROJECT_DESC	?= A simple automated Certificate Authority
 DOCKER_PROJECT_URL	?= https://github.com/sicz/docker-simple-ca
 
 DOCKER_NAME		?= simple-ca
-DOCKER_IMAGE_TAG	?= $(BASE_IMAGE_TAG)
+DOCKER_IMAGE_TAG	?= $(SIMPLE_CA_VERSION)
 DOCKER_IMAGE_TAGS	?= latest
 
-### DOCKER_VERSIONS ###########################################################
+### DOCKER_VERSIONS ############################################################
 
 DOCKER_VERSIONS		?= latest devel
 
 ### BUILD ######################################################################
+
+# Docker image build variables
+BUILD_VARS		+= SIMPLE_CA_VERSION
+
+SIMPLE_CA_VERSION	?= 0.0.1
 
 # Allows a change of the build/restore targets to the docker-tag if
 # the development version is the same as the production version
@@ -49,6 +54,8 @@ MAKE_VARS		?= GITHUB_MAKE_VARS \
 			   DOCKER_VERSION_MAKE_VARS
 
 define BUILD_TARGETS_MAKE_VARS
+SIMPLE_CA_VERSION:	$(SIMPLE_CA_VERSION)
+
 DOCKER_BUILD_TARGET:	$(DOCKER_BUILD_TARGET)
 DOCKER_REBUILD_TARGET:	$(DOCKER_REBUILD_TARGET)
 endef
@@ -63,11 +70,11 @@ export CONFIG_MAKE_VARS
 
 DOCKER_ALL_VERSIONS_TARGETS ?= build rebuild ci clean
 
-### MAKE_TARGETS #############################################################
+### MAKE_TARGETS ###############################################################
 
 # Build and test image
 .PHONY: all ci
-all: build deploy logs test
+all: build up wait logs test
 ci:  all clean
 
 # Display make variables
@@ -92,11 +99,9 @@ rebuild: $(DOCKER_REBUILD_TARGET)
 .PHONY: config-file
 config-file: display-config-file
 
-# Destroy containers and then start fresh ones
-.PHONY: deploy run up
-deploy run up:
-	@set -e; \
-	$(MAKE) destroy start
+# Remove containers and then start fresh ones
+.PHONY: run up
+run up: docker-up
 
 # Create containers
 .PHONY: create
@@ -144,9 +149,9 @@ stop: docker-stop
 .PHONY: restart
 restart: stop start
 
-# Delete containers
-.PHONY: destroy down rm
-destroy down rm: docker-destroy
+# Remove containers
+.PHONY: down rm
+down rm: docker-rm
 
 # Clean project
 .PHONY: clean

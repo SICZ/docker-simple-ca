@@ -54,6 +54,10 @@ else
   : ${CA_KEY_PWD_FILE:=${CA_KEY_DIR}/ca.pwd}
 fi
 
+# Default certificate and private key files mode
+: ${CA_CRT_FILE_MODE:=444}
+: ${CA_KEY_FILE_MODE:=440}
+
 ################################################################################
 
 # Default server private key passphrase file location
@@ -67,6 +71,5 @@ fi
 
 # CA user database file
 : ${SERVER_USERDB_FILE:=/var/lib/lighttpd/user.db}
-: ${SERVER_USERDB_FILE_MODE:=440}
 
 ################################################################################

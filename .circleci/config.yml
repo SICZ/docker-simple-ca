@@ -2,32 +2,35 @@ version: 2
 jobs:
   build: &build
     docker:
-      - image: sicz/dockerspec@sha256:7e946e59349aae5d9f5c8639fd02d76c9a9e8de1e6dd03013d217f381a033ec2
-    working_directory: ~/docker-simple-ca
+      - image: sicz/dockerspec@sha256:b06e045ef6f508591777ed89e6fad6805d9b475ae39453d5ac022d26cda48437
     environment:
       - MAKEFLAGS=--no-print-directory
+      - RSPEC_FORMAT=doc
     steps:
-      - run:
-          name: Set up Environment
-          command: |
-            curl -sSL https://github.com/SICZ/Mk/archive/master.tar.gz | tar -xzf -
-            mv Mk-master ~/Mk
       - checkout
       - setup_remote_docker:
           version: 17.06.0-ce
       - run:
-          name: Remote Docker engine version
+          name: Remote Docker engine version and images
           command: |
-            docker version
+            docker --version
+            docker-compose --version
+            docker image ls
       - run:
-          name: Build and test latest Docker image
+          name: Checkout make files
           command: |
-            make ci-rebuild-and-test DOCKER_TEST_CMD=rspec
+            cd ..
+            curl -sSL https://github.com/SICZ/Mk/archive/master.tar.gz | tar -xzf -
+            mv Mk-master Mk
       - run:
-          name: Build and test development Docker image
+          name: sicz/simple-ca:latest
+          command: |
+            make ci
+      - run:
+          name: sicz/simple-ca:devel
           working_directory: devel
           command: |
-            make ci-rebuild-and-test DOCKER_TEST_CMD=rspec
+            make ci
       - deploy:
           name: Push latest Docker image to Docker Hub
           command: |
@@ -36,10 +39,9 @@ jobs:
               make docker-push
             fi
       - deploy:
-          name: Push development Docker image to Docker Hub
-          working_directory: devel
+          name: Push images to Docker Hub
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWD}
-              make docker-push
+              make docker-push-all
             fi
