@@ -10,8 +10,8 @@ DOCKER_IMAGE_TAGS	?=
 
 SIMPLE_CA_VERSION	?= 0.0.1
 
-# If image configuration variables are not defined, it is assumed that
-# the development image is the same as the production image
+# If the image configuration variables are not defined, the development image is
+# assumed to be the same as the production image
 BUILD_CONFIG		?= $(BASE_IMAGE_TAG) \
 			   $(SIMPLE_CA_VERSION)
 

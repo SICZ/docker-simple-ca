@@ -31,17 +31,18 @@ DOCKER_REBUILD_TARGET	?= docker-rebuild
 
 ### DOCKER_EXECUTOR ############################################################
 
-# Use Docker Compose executor
+# Use the Docker Compose executor
 DOCKER_EXECUTOR		?= compose
 
-# Docker Compose variables
+# Variables used in the Docker Compose file
 COMPOSE_VARS		+= SERVER_CRT_HOST
 
-# Subject aletrnative name in certificate
+# Certificate subject aletrnative names
 SERVER_CRT_HOST		+= simple-ca.local
 
 ### DOCKER_MAKE_VARS ###########################################################
 
+# Display the make variables
 MAKE_VARS		?= GITHUB_MAKE_VARS \
 			   BASE_IMAGE_MAKE_VARS \
 			   DOCKER_IMAGE_MAKE_VARS \
@@ -72,59 +73,63 @@ DOCKER_ALL_VERSIONS_TARGETS ?= build rebuild ci clean
 
 ### MAKE_TARGETS ###############################################################
 
-# Build and test image
-.PHONY: all ci
+# Remove the running containers, build a new image and run the tests
+.PHONY: all
 all: build up wait logs test
-ci:  all clean
 
-# Display make variables
-.PHONY: makevars vars
-makevars vars: display-makevars
+# Make all and clean the project
+.PHONY: ci
+ci: all clean
+
 
 ### BUILD_TARGETS ##############################################################
 
-# Build Docker image with cached layers
+# Build a new image with using the Docker layer caching
 .PHONY: build
 build: $(DOCKER_BUILD_TARGET)
 	@true
 
-# Build Docker image without cached layers
+# Build a new image without using the Docker layer caching
 .PHONY: rebuild
 rebuild: $(DOCKER_REBUILD_TARGET)
 	@true
 
 ### EXECUTOR_TARGETS ###########################################################
 
-# Display Docker COmpose/Swarm configuration file
+# Display the configuration file
 .PHONY: config-file
 config-file: display-config-file
 
-# Remove containers and then start fresh ones
+# Display the make variables
+.PHONY: makevars vars
+makevars vars: display-makevars
+
+# Remove the containers and then run them fresh
 .PHONY: run up
 run up: docker-up
 
-# Create containers
+# Create the containers
 .PHONY: create
 create: docker-create
 	@true
 
-# Start containers
+# Start the containers
 .PHONY: start
 start: create docker-start
 
-# Wait to container start
+# Wait for the start of the containers
 .PHONY: wait
 wait: start docker-wait
 
-# List running containers
+# Display running containers
 .PHONY: ps
 ps: docker-ps
 
-# Display containers logs
+# Display the container logs
 .PHONY: logs
 logs: docker-logs
 
-# Follow containers logs
+# Follow the container logs
 .PHONY: logs-tail tail
 logs-tail tail: docker-logs-tail
 
@@ -132,28 +137,28 @@ logs-tail tail: docker-logs-tail
 .PHONY: shell sh
 shell sh: start docker-shell
 
-# Run tests for current executor configuration
+# Run the tests
 .PHONY: test
 test: start docker-test
 
-# Run shell in test container
+# Run the shell in the test container
 .PHONY: test-shell tsh
 test-shell tsh:
 	@$(MAKE) test TEST_CMD=/bin/bash
 
-# Stop containers
+# Stop the containers
 .PHONY: stop
 stop: docker-stop
 
-# Restart containers
+# Restart the containers
 .PHONY: restart
 restart: stop start
 
-# Remove containers
+# Remove the containers
 .PHONY: down rm
 down rm: docker-rm
 
-# Clean project
+# Remove all containers and work files
 .PHONY: clean
 clean: docker-clean
 
