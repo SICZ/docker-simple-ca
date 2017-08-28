@@ -5,6 +5,8 @@ BASE_IMAGE_TAG		?= 1.4.45
 
 ### DOCKER_IMAGE ###############################################################
 
+SIMPLE_CA_VERSION	?= 1.0.0
+
 DOCKER_PROJECT		?= sicz
 DOCKER_PROJECT_DESC	?= A simple automated Certificate Authority
 DOCKER_PROJECT_URL	?= https://github.com/sicz/docker-simple-ca
@@ -21,8 +23,6 @@ DOCKER_VERSIONS		?= latest devel
 
 # Docker image build variables
 BUILD_VARS		+= SIMPLE_CA_VERSION
-
-SIMPLE_CA_VERSION	?= 0.0.1
 
 # Allows a change of the build/restore targets to the docker-tag if
 # the development version is the same as the production version
