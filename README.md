@@ -11,8 +11,8 @@ clusters secured by certificates.
 ## Contents
 
 This container only contains essential components:
-* [sicz/lighttpd image](https://github.com/sicz/docker-lighttpd) provide web server.
-* `simple-ca.cgi` script as certificate authority.
+* [sicz/lighttpd image](https://github.com/sicz/docker-lighttpd) provides a web server.
+* `simple-ca.cgi` script as a certificate authority.
 
 ## Getting started
 
@@ -31,37 +31,50 @@ git clone https://github.com/sicz/docker-simple-ca
 
 Use command `make` to simplify Docker container development tasks:
 ```bash
-make all        # Destroy running container, build new image and run tests
-make build      # Build new image
-make refresh    # Refresh Dockerfile
-make rebuild    # Build new image without caching
-make secrets    # Populate directory secrets with CA certificate and secrets
-make run        # Run container
-make stop       # Stop running container
-make start      # Start stopped container
-make restart    # Restart container
-make status     # Show container status
-make logs       # Show container logs
-make logs-tail  # Connect to container logs
-make shell      # Open shell in running container
-make test       # Run tests
-make rm         # Destroy running container
-make clean      # Destroy running container and delete CA secrets
+make all                # Remove the running containers, build a new image and run the tests
+make ci                 # Make all and clean the project
+make build              # Build a new image
+make rebuild            # Build a new image without using the Docker layer caching
+make config-file        # Display the configuration file for the current configuration
+make vars               # Display the make variables for the current configuration
+make up                 # Remove the containers and then run them fresh
+make create             # Create the containers
+make start              # Start the containers
+make stop               # Stop the containers
+make restart            # Restart the containers
+make rm                 # Remove the containers
+make wait               # Wait for the start of the containers
+make ps                 # Display running containers
+make logs               # Display the container logs
+make logs-tail          # Follow the container logs
+make shell              # Run the shell in the container
+make test               # Run the tests
+make test-all           # Run tests for all configurations
+make test-shell         # Run the shell in the test container
+make secrets            # Create the Simple CA secrets
+make clean              # Remove all containers and work files
+make docker-pull        # Pull all images from the Docker Registry
+make docker-pull-dependencies # Pull the project image dependencies from the Docker Registry
+make docker-pull-image  # Pull the project image from the Docker Registry
+make docker-pull-testimage # Pull the test image from the Docker Registry
+make docker-push        # Push the project image into the Docker Registry
 ```
 
-With default configuration `simple-ca` listens on TCP port 443 and sends all
+`simple-ca`  with default configuration listens on TCP port 443 and sends all
 logs to Docker console.
 
-After first run, directory `secrets` is populated with CA certificate and secrets:
-* `ca_crt.pem` - CA certificate
-* `ca_key.pem` - encrypted CA private key
-* `ca_key.pwd` - CA private key passphrase
-* `ca_user.pwd` - password for user `requestor`
-* `ca_server.pem` - web server certificate nad private key
+After first run, directory `/var/lib/simple-ca/secrets` is populated with CA
+certificate and secrets:
+* `ca.crt` - CA certificate
+* `ca.key` - encrypted CA private key
+* `ca.pwd` - CA private key passphrase
+* `ca_user.name` - CA user name
+* `ca_user.pwd` - CA user password
+* `server.pwd` - server key passphrase
 
 How to obtain CA certificate:
 ```bash
-curl -k https://simple-ca/ca.pem > ca_crt.pem
+curl -k https://simple-ca/ca.crt > /etc/ssl/certs/ca.crt
 ```
 
 How to obtain server certificate:
@@ -69,14 +82,14 @@ How to obtain server certificate:
 SERVER_KEY_PWD=$(openssl rand -hex 32)
 openssl req -newkey rsa:2048 \
   -subj "/CN=${HOSTNAME}" \
-  -keyout server_key.pem \
+  -keyout /etc/ssl/private/server.key \
   -passout "pass:${SERVER_KEY_PWD}" |
 curl \
-  --cacert ca_crt.pem \
-  --user "requestor:$(cat ca_user.pwd)"
+  --cacert /etc/ssl/certs/ca.crt \
+  --user "$(cat ${CA_USER_NAME_FILE}):$(cat ${CA_USER_PWD_FILE})"
   --data-binary @- \
-  --output server_crt.pem \
-  "https://simple-ca/sign?dn=CN=${HOSTNAME}&dns=${SERVER_CRT_NAMES}&ip=${SERVER_CRT_IP}&oid=${SERVER_CRT_OID}"
+  --output /etc/ssl/certs/server.crt \
+  "https://simple-ca/sign?dn=CN=${HOSTNAME}&dns=${SERVER_CRT_HOST}&ip=${SERVER_CRT_IP}&oid=${SERVER_CRT_OID}"
 ```
 
 ## Deployment
@@ -86,7 +99,7 @@ At first populate `secrets` directory with CA secrets:
 docker run -v $PWD/secrets:/var/lib/simple-ca/secrets sicz/simple-ca secrets
 ```
 
-You can start with this sample `docker-compose.yml` file:
+Then you can start with this sample `docker-compose.yml` file:
 ```yaml
 services:
   simple-ca:
@@ -107,7 +120,7 @@ services:
       - ./www:/var/www
     environment:
       - SIMPLE_CA_URL=https://simple-ca:9443
-      - SERVER_CRT_NAME=my-service.my-domain
+      - SERVER_CRT_HOST=my-service.my-domain
 ```
 
 ## Authors
@@ -123,7 +136,3 @@ who participated in this project.
 
 This project is licensed under the Apache License, Version 2.0 - see the
 [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-This project is based on [jcmoraisjr/simple-ca](https://github.com/jcmoraisjr/simple-ca).
