@@ -1,6 +1,6 @@
 version: 2
 jobs:
-  build: &build
+  build:
     docker:
       - image: sicz/dockerspec@sha256:2a44668c827a7680a78349fda3e051b8549a4dc9a663b2444fbad69e68109213
     environment:
