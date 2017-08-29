@@ -25,6 +25,7 @@ services:
 
   test:
     image: ${TEST_IMAGE}
+    command: ${TEST_CMD}
     depends_on:
       - simple_ca
     env_file:
