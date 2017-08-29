@@ -14,6 +14,7 @@ DOCKER_PROJECT_URL	?= https://github.com/sicz/docker-simple-ca
 DOCKER_NAME		?= simple-ca
 DOCKER_IMAGE_TAG	?= $(SIMPLE_CA_VERSION)
 DOCKER_IMAGE_TAGS	?= latest
+DOCKER_IMAGE_DEPENDENCIES += $(SIMPLE_CA_IMAGE)
 
 ### DOCKER_VERSIONS ############################################################
 
