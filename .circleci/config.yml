@@ -25,7 +25,7 @@ jobs:
       - run:
           name: sicz/simple-ca:latest
           command: |
-            make ci
+            make vars ci
       - run:
           name: sicz/simple-ca:devel
           working_directory: devel
