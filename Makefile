@@ -5,7 +5,7 @@ BASE_IMAGE_TAG		?= 1.4.45
 
 ### DOCKER_IMAGE ###############################################################
 
-SIMPLE_CA_VERSION	?= 1.0.0
+SIMPLE_CA_VERSION	?= 1.1.0
 
 DOCKER_PROJECT		?= sicz
 DOCKER_PROJECT_DESC	?= A simple automated Certificate Authority
@@ -25,7 +25,8 @@ DOCKER_VERSIONS		?= latest devel
 BUILD_VARS		+= SIMPLE_CA_VERSION
 
 # Allows a change of the build/restore targets to the docker-tag if
-# the development version is the same as the production version
+# the development version is the same as the latest version
+DOCKER_CI_TARGET	?= all
 DOCKER_BUILD_TARGET	?= docker-build
 DOCKER_REBUILD_TARGET	?= docker-rebuild
 
@@ -73,14 +74,14 @@ DOCKER_ALL_VERSIONS_TARGETS ?= build rebuild ci clean
 
 ### MAKE_TARGETS ###############################################################
 
-# Remove the running containers, build a new image and run the tests
+# Build a new image and run the tests
 .PHONY: all
-all: build up wait logs test
+all: build clean start wait logs test
 
-# Make all and clean the project
+# Build a new image and run the tests
 .PHONY: ci
-ci: all clean
-
+ci: $(DOCKER_CI_TARGET)
+	@$(MAKE) clean
 
 ### BUILD_TARGETS ##############################################################
 

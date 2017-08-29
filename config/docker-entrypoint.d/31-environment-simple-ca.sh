@@ -4,10 +4,12 @@
 
 # Simple CA requires to have all certificates and secrets in /var/lib/simple-ca
 SIMPLE_CA_DIR=/var/lib/simple-ca
-CA_CRT_DIR=${SIMPLE_CA_DIR}/secrets
-CA_KEY_DIR=${SIMPLE_CA_DIR}/secrets
-SERVER_CRT_DIR=${SIMPLE_CA_DIR}/certs
-SERVER_KEY_DIR=${SIMPLE_CA_DIR}/certs
+SIMPLE_CA_PRIVATE_DIR=${SIMPLE_CA_DIR}/private
+SIMPLE_CA_SECRETS_DIR=${SIMPLE_CA_DIR}/secrets
+CA_CRT_DIR=${SIMPLE_CA_SECRETS_DIR}
+CA_KEY_DIR=${SIMPLE_CA_PRIVATE_DIR}
+SERVER_CRT_DIR=${SIMPLE_CA_PRIVATE_DIR}
+SERVER_KEY_DIR=${SIMPLE_CA_PRIVATE_DIR}
 
 ################################################################################
 
@@ -18,14 +20,14 @@ SERVER_KEY_DIR=${SIMPLE_CA_DIR}/certs
 if [ -e /run/secrets/ca_user.pwd ]; then
   : ${CA_USER_NAME_FILE:=/run/secrets/ca_user.name}
 else
-  : ${CA_USER_NAME_FILE:=${CA_KEY_DIR}/ca_user.name}
+  : ${CA_USER_NAME_FILE:=${SIMPLE_CA_SECRETS_DIR}/ca_user.name}
 fi
 
 # Default CA user password file location
 if [ -e /run/secrets/ca_user.pwd ]; then
   : ${CA_USER_PWD_FILE:=/run/secrets/ca_user.pwd}
 else
-  : ${CA_USER_PWD_FILE:=${CA_KEY_DIR}/ca_user.pwd}
+  : ${CA_USER_PWD_FILE:=${SIMPLE_CA_SECRETS_DIR}/ca_user.pwd}
 fi
 
 ################################################################################
@@ -54,18 +56,11 @@ else
   : ${CA_KEY_PWD_FILE:=${CA_KEY_DIR}/ca.pwd}
 fi
 
-# Default certificate and private key files mode
-: ${CA_CRT_FILE_MODE:=444}
-: ${CA_KEY_FILE_MODE:=440}
-
 ################################################################################
 
-# Default server private key passphrase file location
-if [ -e /run/secrets/server.pwd ]; then
-  : ${SERVER_KEY_PWD_FILE:=/run/secrets/server.pwd}
-else
-  : ${SERVER_KEY_PWD_FILE:=${CA_KEY_DIR}/server.pwd}
-fi
+# TODO Lighttpd does not support encrypted private key
+# # Default server private key passphrase file location
+# : ${SERVER_KEY_PWD_FILE:=${SERVER_KEY_DIR}/server.pwd}
 
 ################################################################################
 

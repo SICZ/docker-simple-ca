@@ -22,17 +22,17 @@ on how to deploy the project on a live system.
 
 ### Installing
 
-Clone GitHub repository to your working directory:
+Clone the GitHub repository into your working directory:
 ```bash
 git clone https://github.com/sicz/docker-simple-ca
 ```
 
 ### Usage
 
-Use command `make` to simplify Docker container development tasks:
+Use the command `make` to simplify the Docker container development tasks:
 ```bash
-make all                # Remove the running containers, build a new image and run the tests
-make ci                 # Make all and clean the project
+make all                # Build a new image and run the tests
+make ci                 # Build a new image and run the tests
 make build              # Build a new image
 make rebuild            # Build a new image without using the Docker layer caching
 make config-file        # Display the configuration file for the current configuration
@@ -51,7 +51,7 @@ make shell              # Run the shell in the container
 make test               # Run the tests
 make test-all           # Run tests for all configurations
 make test-shell         # Run the shell in the test container
-make secrets            # Create the Simple CA secrets
+make secrets            # Create the Simple CA secrets volume
 make clean              # Remove all containers and work files
 make docker-pull        # Pull all images from the Docker Registry
 make docker-pull-dependencies # Pull the project image dependencies from the Docker Registry
@@ -60,44 +60,16 @@ make docker-pull-testimage # Pull the test image from the Docker Registry
 make docker-push        # Push the project image into the Docker Registry
 ```
 
-`simple-ca`  with default configuration listens on TCP port 443 and sends all
-logs to Docker console.
+`simple-ca`  with the default configuration listens on TCP port 443 and sends
+all logs to the Docker console.
 
-After first run, directory `/var/lib/simple-ca/secrets` is populated with CA
-certificate and secrets:
+After the first run, the container's directory `/var/lib/simple-ca/secrets` is
+populated with the CA certificate and secrets:
 * `ca.crt` - CA certificate
-* `ca.key` - encrypted CA private key
-* `ca.pwd` - CA private key passphrase
 * `ca_user.name` - CA user name
 * `ca_user.pwd` - CA user password
-* `server.pwd` - server key passphrase
-
-How to obtain CA certificate:
-```bash
-curl -k https://simple-ca/ca.crt > /etc/ssl/certs/ca.crt
-```
-
-How to obtain server certificate:
-```bash
-SERVER_KEY_PWD=$(openssl rand -hex 32)
-openssl req -newkey rsa:2048 \
-  -subj "/CN=${HOSTNAME}" \
-  -keyout /etc/ssl/private/server.key \
-  -passout "pass:${SERVER_KEY_PWD}" |
-curl \
-  --cacert /etc/ssl/certs/ca.crt \
-  --user "$(cat ${CA_USER_NAME_FILE}):$(cat ${CA_USER_PWD_FILE})"
-  --data-binary @- \
-  --output /etc/ssl/certs/server.crt \
-  "https://simple-ca/sign?dn=CN=${HOSTNAME}&dns=${SERVER_CRT_HOST}&ip=${SERVER_CRT_IP}&oid=${SERVER_CRT_OID}"
-```
 
 ## Deployment
-
-At first populate `secrets` directory with CA secrets:
-```bash
-docker run -v $PWD/secrets:/var/lib/simple-ca/secrets sicz/simple-ca secrets
-```
 
 Then you can start with this sample `docker-compose.yml` file:
 ```yaml
@@ -107,20 +79,10 @@ services:
     ports:
       - 9443:443
     volumes:
+      - simple_ca_data:/var/lib/simple-ca
       - ./secrets:/var/lib/simple-ca/secrets
-  lighttpd:
-    image: sicz/lighttpd
-    ports:
-      - 8080:80
-      - 8443:443
-    volumes:
-      - ./secrets/ca_crt.pem:/run/secrets/ca_crt.pem
-      - ./secrets/ca_user.pwd:/run/secrets/ca_user.pwd
-      - ./config/server.conf:/etc/lighttpd/server.conf
-      - ./www:/var/www
-    environment:
-      - SIMPLE_CA_URL=https://simple-ca:9443
-      - SERVER_CRT_HOST=my-service.my-domain
+volumes:
+  simple_ca_data:
 ```
 
 ## Authors

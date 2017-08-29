@@ -50,7 +50,7 @@ default_ca              = simple_ca             # The default CA section
 
 [ simple_ca ]
 certificate             = /var/lib/simple-ca/secrets/ca.crt # The CA cert
-private_key             = /var/lib/simple-ca/secrets/ca.key # CA private key
+private_key             = /var/lib/simple-ca/private/ca.key # CA private key
 new_certs_dir           = $dir/newcerts         # Certificate archive
 serial                  = $dir/serial           # Serial number file
 crlnumber               = $dir/crlnumber        # CRL number file

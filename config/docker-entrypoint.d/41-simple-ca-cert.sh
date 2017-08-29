@@ -3,22 +3,22 @@
 ################################################################################
 
 # Initialize CA's directory
-if [ ! -e /var/lib/simple-ca/serial ]; then
+if [ ! -e ${SIMPLE_CA_DIR}/serial ]; then
   info "Initializing CA directory ${SIMPLE_CA_DIR}"
-  for DIR in . certs newcerts secrets; do
-    mkdir -p ${SIMPLE_CA_DIR}/${DIR}
-    chmod 750 ${SIMPLE_CA_DIR}/${DIR}
+  for DIR in ${SIMPLE_CA_DIR} ${SIMPLE_CA_DIR}/newcerts ${SIMPLE_CA_PRIVATE_DIR} ${SIMPLE_CA_SECRETS_DIR}; do
+    mkdir -p ${DIR}
+    chmod 750 ${DIR}
   done
+  chmod 755 ${SIMPLE_CA_SECRETS_DIR}
   echo -n > ${SIMPLE_CA_DIR}/index
   echo -n "01" > ${SIMPLE_CA_DIR}/serial
-  chmod 644 ${SIMPLE_CA_DIR}/index ${SIMPLE_CA_DIR}/serial
+  chmod 640 ${SIMPLE_CA_DIR}/index ${SIMPLE_CA_DIR}/serial
 fi
 
 ################################################################################
 
 # Create CA private key and certificate
 if [ ! -e ${CA_KEY_FILE} -o ! -e ${CA_CRT_FILE} ]; then
-  info "Creating CA private key file ${CA_KEY_FILE}"
   # Get CA private key passphrase
   if [ -e "${CA_KEY_PWD_FILE}" ]; then
     info "Using CA private key passphrase file ${CA_KEY_PWD_FILE}"
@@ -26,8 +26,9 @@ if [ ! -e ${CA_KEY_FILE} -o ! -e ${CA_CRT_FILE} ]; then
     info "Creating random CA private key passphrase file ${CA_KEY_PWD_FILE}"
     mkdir -p $(dirname ${CA_KEY_PWD_FILE})
     openssl rand -hex 32 > ${CA_KEY_PWD_FILE}
-    chmod ${CA_KEY_FILE_MODE} ${CA_KEY_PWD_FILE}
+    chmod 440 ${CA_KEY_PWD_FILE}
   fi
+  info "Creating CA private key file ${CA_KEY_FILE}"
   info "Creating CA certificate file ${CA_CRT_FILE}"
   openssl req -x509 -days 36520 \
     -subj "/${CA_CRT_SUBJECT}" \
@@ -35,34 +36,11 @@ if [ ! -e ${CA_KEY_FILE} -o ! -e ${CA_CRT_FILE} ]; then
     -keyout ${CA_KEY_FILE} \
     -passout file:${CA_KEY_PWD_FILE} \
     -out ${CA_CRT_FILE}
-  if [ -n "${SERVER_CRT_FILE_OWNER}" ]; then
-    chown ${SERVER_CRT_FILE_OWNER} ${CA_CRT_FILE}
-  fi
-  chmod ${CA_CRT_FILE_MODE} ${CA_CRT_FILE}
-  if [ -n "${SERVER_KEY_FILE_OWNER}" ]; then
-    chown ${SERVER_KEY_FILE_OWNER} ${CA_KEY_FILE}
-  fi
-  chmod ${CA_KEY_FILE_MODE} ${CA_KEY_FILE}
+  chmod 444 ${CA_CRT_FILE}
+  chmod 440 ${CA_KEY_FILE}
 else
   info "Using CA private key file ${CA_KEY_FILE}"
   info "Using CA certificate file ${CA_CRT_FILE}"
-fi
-
-################################################################################
-
-# Paths in openssl.cnf must be hardcoded because LibreSSL removed support
-# for ${ENV::VARIABLE}
-if [ "$(dirname ${CA_CRT_FILE})" != "${SIMPLE_CA_DIR}/secrets" ]; then
-  if [ ! -e "${SIMPLE_CA_DIR}/secrets/ca.crt" ]; then
-    debug "Creating link ${SIMPLE_CA_DIR}/secrets/ca.crt => ${CA_CRT_FILE}"
-    ln -s ${CA_CRT_FILE} ${SIMPLE_CA_DIR}/secrets/ca.crt
-  fi
-fi
-if [ "${CA_KEY_FILE}" != "${SIMPLE_CA_DIR}/secrets/ca.key" ]; then
-  if [ ! -e "${SIMPLE_CA_DIR}/secrets/ca.key" ]; then
-    debug "Creating link ${SIMPLE_CA_DIR}/secrets/ca.key => ${CA_KEY_FILE}"
-    ln -s ${CA_KEY_FILE} ${SIMPLE_CA_DIR}/secrets/ca.key
-  fi
 fi
 
 ################################################################################
@@ -78,7 +56,7 @@ fi
 if [ ! -e ${CA_USER_NAME_FILE} ]; then
   info "Saving CA user name to ${CA_USER_NAME_FILE}"
   echo "${CA_USER_NAME}" > ${CA_USER_NAME_FILE}
-  chmod ${CA_KEY_FILE_MODE} ${CA_USER_NAME_FILE}
+  chmod 440 ${CA_USER_NAME_FILE}
 fi
 
 # Get CA user passowrd
@@ -92,24 +70,7 @@ fi
 if [ ! -e ${CA_USER_PWD_FILE} ]; then
   info "Saving CA user password to ${CA_USER_PWD_FILE}"
   echo "${CA_USER_NAME_PWD}" > ${CA_USER_PWD_FILE}
-  chmod ${CA_KEY_FILE_MODE} ${CA_USER_PWD_FILE}
-fi
-
-################################################################################
-
-# Get server private key passphrase
-if [ -e "${SERVER_KEY_PWD_FILE}" ]; then
-  info "Using server private key passphrase from ${SERVER_KEY_PWD_FILE}"
-  SERVER_KEY_PWD=$(cat ${SERVER_KEY_PWD_FILE})
-else
-  info "Creating random server private key passphrase"
-  SERVER_KEY_PWD=$(openssl rand -hex 32)
-fi
-if [ ! -e ${SERVER_KEY_PWD_FILE} ]; then
-  info "Saving CA user password to ${SERVER_KEY_PWD_FILE}"
-  echo "${SERVER_KEY_PWD}" > ${SERVER_KEY_PWD_FILE}
-  debug "Changing mode of ${SERVER_KEY_PWD_FILE} to ${SERVER_KEY_FILE_MODE}"
-  chmod ${SERVER_KEY_FILE_MODE} ${SERVER_KEY_PWD_FILE}
+  chmod 440 ${CA_USER_PWD_FILE}
 fi
 
 ################################################################################
@@ -117,6 +78,8 @@ fi
 # Set permissions
 debug "Changing owner of ${SIMPLE_CA_DIR} to ${LIGHTTPD_FILE_OWNER}"
 chown -R ${LIGHTTPD_FILE_OWNER} ${SIMPLE_CA_DIR}
+debug "Changing owner of ${SIMPLE_CA_SECRETS_DIR} to root:root"
+chown -R root:root ${SIMPLE_CA_SECRETS_DIR}
 
 ################################################################################
 
@@ -128,6 +91,29 @@ fi
 
 ################################################################################
 
+# Paths in openssl.cnf must be hardcoded because LibreSSL removed support
+# for ${ENV::VARIABLE}
+if [ "${CA_CRT_FILE}" != "${SIMPLE_CA_SECRETS_DIR}/ca.crt" ]; then
+  if [ ! -e "${SIMPLE_CA_SECRETS_DIR}/ca.crt" ]; then
+    debug "Creating link ${SIMPLE_CA_SECRETS_DIR}/ca.crt => ${CA_CRT_FILE}"
+    ln -s ${CA_CRT_FILE} ${SIMPLE_CA_SECRETS_DIR}/ca.crt
+  fi
+fi
+if [ "${CA_KEY_FILE}" != "${SIMPLE_CA_PRIVATE_DIR}/ca.key" ]; then
+  if [ ! -e "${SIMPLE_CA_PRIVATE_DIR}/ca.key" ]; then
+    debug "Creating link ${SIMPLE_CA_PRIVATE_DIR}/ca.key => ${CA_KEY_FILE}"
+    ln -s ${CA_KEY_FILE} ${SIMPLE_CA_PRIVATE_DIR}/ca.key
+  fi
+fi
+if [ "${CA_KEY_PWD_FILE}" != "${SIMPLE_CA_PRIVATE_DIR}/ca.pwd" ]; then
+  if [ ! -e "${SIMPLE_CA_PRIVATE_DIR}/ca.pwd" ]; then
+    debug "Creating link ${SIMPLE_CA_PRIVATE_DIR}/ca.pwd => ${CA_KEY_PWD_FILE}"
+    ln -s ${CA_KEY_PWD_FILE} ${SIMPLE_CA_PRIVATE_DIR}/ca.pwd
+  fi
+fi
+
+################################################################################
+
 # Export variables for /etc/lighttpd/server.conf and /var/www/simple-cgi.sh
 export SIMPLE_CA_DIR CA_KEY_PWD_FILE CA_CRT_FILE CA_USER_NAME CA_USER_REALM
 
@@ -135,9 +121,15 @@ export SIMPLE_CA_DIR CA_KEY_PWD_FILE CA_CRT_FILE CA_USER_NAME CA_USER_REALM
 
 # Create server private key and certificate
 if [ ! -e "${SERVER_CRT_FILE}" ]; then
-  info "Creating server private key file ${SERVER_KEY_FILE}"
+
+  # Get server private key passphrase
+  if [ -z "${SERVER_KEY_PWD}" ]; then
+    info "Creating random server private key passphrase"
+    SERVER_KEY_PWD=$(openssl rand -hex 32)
+  fi
 
   # Get server certificate attributes
+  info "Creating server private key file ${SERVER_KEY_FILE}"
   info "Creating server certificate file ${SERVER_CRT_FILE}"
   SERVER_CRT_REQ_HOST="${SERVER_CRT_HOST},${DOCKER_CONTAINER_NAME},${HOSTNAME},localhost"
   SERVER_CRT_REQ_IP="${SERVER_CRT_IP},$(
@@ -163,24 +155,26 @@ if [ ! -e "${SERVER_CRT_FILE}" ]; then
     QUERY_STRING="dn=${SERVER_CRT_SUBJECT}&dns=${SERVER_CRT_REQ_HOST}&ip=${SERVER_CRT_REQ_IP}&rid=${SERVER_CRT_OID}" \
   /var/www/simple-ca.cgi |
   egrep -v "^(HTTP/.*|Content-Type:.*|)$" > ${SERVER_CRT_FILE}
+  chmod ${SERVER_CRT_FILE_MODE} ${SERVER_CRT_FILE}
+  chmod ${SERVER_KEY_FILE_MODE} ${SERVER_KEY_FILE}
 
-  # Set permissions
-  if [ -n "${LIGHTTPD_FILE_OWNER}" ]; then
-    debug "Changing owner of ${SIMPLE_CA_DIR} to ${LIGHTTPD_FILE_OWNER}"
-    chown -R ${LIGHTTPD_FILE_OWNER} ${SIMPLE_CA_DIR}
-  fi
+  # Set server certificate and private key owner
   if [ -n "${SERVER_CRT_FILE_OWNER}" ]; then
     debug "Changing owner of ${SERVER_CRT_FILE} to ${SERVER_CRT_FILE_OWNER}"
     chown ${SERVER_CRT_FILE_OWNER} ${SERVER_CRT_FILE}
   fi
-  debug "Changing mode of ${SERVER_CRT_FILE} to ${SERVER_CRT_FILE_MODE}"
-  chmod ${SERVER_CRT_FILE_MODE} ${SERVER_CRT_FILE}
   if [ -n "${SERVER_KEY_FILE_OWNER}" ]; then
     debug "Changing owner of ${SERVER_KEY_FILE} to ${SERVER_KEY_FILE_OWNER}"
     chown ${SERVER_KEY_FILE_OWNER} ${SERVER_KEY_FILE}
   fi
-  debug "Changing mode of ${SERVER_KEY_FILE} to ${SERVER_KEY_FILE_MODE}"
-  chmod ${SERVER_KEY_FILE_MODE} ${SERVER_KEY_FILE}
 fi
+
+################################################################################
+
+# Set permissions
+debug "Changing owner of ${SIMPLE_CA_DIR} to ${LIGHTTPD_FILE_OWNER}"
+chown -R ${LIGHTTPD_FILE_OWNER} ${SIMPLE_CA_DIR}
+debug "Changing owner of ${SIMPLE_CA_SECRETS_DIR} to root:root"
+chown -R root:root ${SIMPLE_CA_SECRETS_DIR}
 
 ################################################################################

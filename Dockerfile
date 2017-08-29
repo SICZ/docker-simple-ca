@@ -21,7 +21,4 @@ LABEL \
 
 COPY config /
 RUN set -exo pipefail; \
-  mkdir -p /var/lib/simple-ca; \
-  chown lighttpd:lighttpd /var/lib/simple-ca; \
-  chmod 750 /var/lib/simple-ca; \
   chmod 555 /var/www/simple-ca.cgi

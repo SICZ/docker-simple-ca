@@ -12,7 +12,7 @@ describe "Server certificate", :test => :server_cert do
   group = "lighttpd"
 
   # NOTE: Certificate and key are in the same file
-  crt = "/var/lib/simple-ca/certs/server.crt"
+  crt = "/var/lib/simple-ca/private/server.crt"
 
   ### CERTIFICATE ##############################################################
 
@@ -45,24 +45,6 @@ describe "Server certificate", :test => :server_cert do
       it { is_expected.not_to be_encrypted }
       it { is_expected.to be_valid }
       it { is_expected.to have_matching_certificate(crt) }
-    end
-  end
-
-  ### FILES ####################################################################
-
-  describe "Simple CA secrets" do
-    [
-      # [file]
-      ENV["CA_USER_NAME_FILE"]    || "/var/lib/simple-ca/secrets/ca_user.name",
-      ENV["CA_USER_PWD_FILE"]     || "/var/lib/simple-ca/secrets/ca_user.pwd",
-    ].each do |file|
-      context file(file) do
-        it { is_expected.to be_file }
-        it { is_expected.to be_mode(440) }
-        # TODO: ca_user.* files are copied to container with strange owner
-        # it { is_expected.to be_owned_by(user) }
-        # it { is_expected.to be_grouped_into(group) }
-      end
     end
   end
 

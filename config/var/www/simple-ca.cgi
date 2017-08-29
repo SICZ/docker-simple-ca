@@ -3,6 +3,7 @@
 ### DIE ########################################################################
 
 die() {
+  echo "$*" >&2
   echo "HTTP/1.1 500 Internal Server Error"
   echo "Content-Type: text/plain"
   echo
@@ -114,13 +115,12 @@ umask 0027
 # Handle URI
 case "${PATH_INFO}" in
   /sign)
-    CRT=/tmp/$$.crt
+    CRT=$(mktemp)
     trap "rm -f ${CRT}" EXIT
     ERR=$(sign "${CRT}" 2>&1) || die "${ERR}"
-    OUT="${CRT}"
     ;;
   /ca.crt)
-    OUT="${CA_CRT_FILE}"
+    CRT="${CA_CRT_FILE}"
     ;;
   *)
     notFound
@@ -131,6 +131,6 @@ esac
 echo "HTTP/1.1 200 OK"
 echo "Content-Type: text/plain"
 echo
-cat "${OUT}"
+cat "${CRT}"
 
 ################################################################################

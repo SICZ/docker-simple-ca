@@ -65,26 +65,19 @@ describe "Docker image", :test => :docker_image do
   ### FILES ####################################################################
 
   describe "Files" do
-    # Fix persmissions broken after mounting simple_ca_secrets volume in test container
-    before(:context) do
-      system("chmod 750 /run/secrets")
-      system("chown 1000:1000 /run/secrets")
-    end
     [
       # [file,                                            mode, user,       group,      [expectations]]
       ["/docker-entrypoint.sh",                           755, "root",      "root",     [:be_file]],
       ["/docker-entrypoint.d/31-environment-simple-ca.sh", 644, "root",     "root",     [:be_file, :eq_sha256sum]],
-      ["/docker-entrypoint.d/40-simple-ca-cert.sh",       644, "root",      "root",     [:be_file, :eq_sha256sum]],
+      ["/docker-entrypoint.d/41-simple-ca-cert.sh",       644, "root",      "root",     [:be_file, :eq_sha256sum]],
       ["/docker-entrypoint.d/60-simple-ca-userdb.sh",     644, "root",      "root",     [:be_file, :eq_sha256sum]],
       ["/etc/lighttpd/lighttpd.conf",                     644, "root",      "root",     [:be_file]],
       ["/etc/lighttpd/server.conf",                       644, "root",      "root",     [:be_file, :eq_sha256sum]],
       ["/etc/ssl/openssl.cnf",                            644, "root",      "root",     [:be_file, :eq_sha256sum]],
       ["/var/lib/simple-ca",                              750, "lighttpd",  "lighttpd", [:be_directory]],
-      ["/var/lib/simple-ca/certs",                        750, "lighttpd",  "lighttpd", [:be_directory]],
       ["/var/lib/simple-ca/newcerts",                     750, "lighttpd",  "lighttpd", [:be_directory]],
-      ["/var/lib/simple-ca/secrets",                      750, "lighttpd",  "lighttpd", [:be_directory]],
-      ["/var/lib/simple-ca/secrets/ca.crt",               444, "lighttpd",  "lighttpd"],
-      ["/var/lib/simple-ca/secrets/ca.key",               440, "lighttpd",  "lighttpd"],
+      ["/var/lib/simple-ca/private",                      750, "lighttpd",  "lighttpd", [:be_directory]],
+      ["/var/lib/simple-ca/secrets",                      755, "root",      "root",     [:be_directory]],
       ["/var/lib/simple-ca/index",                        640, "lighttpd",  "lighttpd", [:be_file]],
       ["/var/lib/simple-ca/serial",                       640,  "lighttpd", "lighttpd", [:be_file]],
       ["/var/lib/lighttpd",                               750, "lighttpd",  "lighttpd", [:be_directory]],
