@@ -29,7 +29,7 @@ git clone https://github.com/sicz/docker-simple-ca
 
 ### Usage
 
-Use the command `make` to simplify the Docker container development tasks:
+Use the command `make` to simplify the Docker image development tasks:
 ```bash
 make all                # Build a new image and run the tests
 make ci                 # Build a new image and run the tests
@@ -49,7 +49,6 @@ make logs               # Display the container logs
 make logs-tail          # Follow the container logs
 make shell              # Run the shell in the container
 make test               # Run the tests
-make test-all           # Run tests for all configurations
 make test-shell         # Run the shell in the test container
 make secrets            # Create the Simple CA secrets volume
 make clean              # Remove all containers and work files
