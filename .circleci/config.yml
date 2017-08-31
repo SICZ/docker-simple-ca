@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: sicz/dockerspec@sha256:5f1324c5ec967301a4cb764d3e97a90605281fe38a7c94ec3e9b09d3354cbd30
+      - image: sicz/dockerspec@sha256:09539cc08cf751dc4206586955684f37c6f6dc47d969081752ea4b9d42098642
     environment:
       - MAKEFLAGS=--no-print-directory
       - RSPEC_FORMAT=doc
