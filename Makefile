@@ -42,7 +42,8 @@ SERVICE_NAME		?= container
 SERVER_CRT_HOST		+= $(SERVICE_NAME).local
 
 # Variables used in the Docker Compose file
-COMPOSE_VARS		+= SERVER_CRT_HOST
+COMPOSE_VARS		+= SERVER_CRT_HOST \
+			   SERVICE_NAME
 
 ### DOCKER_MAKE_VARS ###########################################################
 
