@@ -35,11 +35,14 @@ DOCKER_REBUILD_TARGET	?= docker-rebuild
 # Use the Docker Compose executor
 DOCKER_EXECUTOR		?= compose
 
-# Variables used in the Docker Compose file
-COMPOSE_VARS		+= SERVER_CRT_HOST
+# Use the same service name for all configurations
+SERVICE_NAME		?= container
 
 # Certificate subject aletrnative names
-SERVER_CRT_HOST		+= simple-ca.local
+SERVER_CRT_HOST		+= $(SERVICE_NAME).local
+
+# Variables used in the Docker Compose file
+COMPOSE_VARS		+= SERVER_CRT_HOST
 
 ### DOCKER_MAKE_VARS ###########################################################
 
