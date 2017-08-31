@@ -33,7 +33,9 @@ services:
     environment:
       - DOCKER_ENTRYPOINT_DEBUG=true
       - DOCKER_ENTRYPOINT_INFO=true
+      # Wait until the tested container is started
       - WAIT_FOR_URL=https://simple-ca.local/ca.crt
+      - WAIT_FOR_TIMEOUT=5
     networks:
       default:
         aliases:
@@ -52,7 +54,9 @@ services:
     environment:
       - DOCKER_ENTRYPOINT_DEBUG=true
       - DOCKER_ENTRYPOINT_INFO=true
+      # Wait until the tested container is started
       - WAIT_FOR_URL=https://simple-ca.local/ca.crt
+      - WAIT_FOR_TIMEOUT=5
     networks:
       default:
         aliases:
