@@ -89,7 +89,8 @@ volumes:
   [jcmoraisjr/simple-ca](https://github.com/jcmoraisjr/simple-ca).
 * [Petr Řehoř](https://github.com/prehor) - adapted it to the needs of SICZ.
 
-See also the list of [contributors](https://github.com/sicz/docker-baseimage-alpine/contributors)
+See also the list of
+[contributors](https://github.com/sicz/docker-simple-ca/contributors)
 who participated in this project.
 
 ## License
