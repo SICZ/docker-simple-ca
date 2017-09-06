@@ -13,8 +13,7 @@ jobs:
       - run:
           name: Remote Docker engine version and images
           command: |
-            docker --version
-            docker-compose --version
+            docker version
             docker image ls
       - run:
           name: Checkout make files
@@ -26,15 +25,10 @@ jobs:
           name: sicz/simple-ca:latest
           command: |
             make ci
-      - run:
-          name: sicz/simple-ca:devel
-          working_directory: devel
-          command: |
-            make ci
       - deploy:
           name: Push images to the Docker Hub
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               docker login -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWD}
-              make docker-push-all
+              make docker-push
             fi
