@@ -8,7 +8,7 @@ networks:
   default:
 
 services:
-  container:
+  simple_ca:
     image: ${DOCKER_IMAGE}
     environment:
       - DOCKER_ENTRYPOINT_DEBUG=true
@@ -17,7 +17,7 @@ services:
     networks:
       default:
         aliases:
-          - container.local
+          - simple-ca.local
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - simple_ca_data:/var/lib/simple-ca
@@ -27,14 +27,14 @@ services:
     image: ${TEST_IMAGE}
     command: ${TEST_CMD}
     depends_on:
-      - container
+      - simple_ca
     env_file:
       - ${TEST_ENV_FILE}
     environment:
       - DOCKER_ENTRYPOINT_DEBUG=true
       - DOCKER_ENTRYPOINT_INFO=true
       # Wait until the tested container is started
-      - WAIT_FOR_URL=https://container.local/ca.crt
+      - WAIT_FOR_URL=https://simple-ca.local/ca.crt
       - WAIT_FOR_TIMEOUT=5
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -46,12 +46,12 @@ services:
   wait:
     image: ${TEST_IMAGE}
     depends_on:
-      - container
+      - simple_ca
     environment:
       - DOCKER_ENTRYPOINT_DEBUG=true
       - DOCKER_ENTRYPOINT_INFO=true
       # Wait until the tested container is started
-      - WAIT_FOR_URL=https://container.local/ca.crt
+      - WAIT_FOR_URL=https://simple-ca.local/ca.crt
       - WAIT_FOR_TIMEOUT=5
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro

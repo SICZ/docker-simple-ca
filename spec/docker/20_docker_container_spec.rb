@@ -49,7 +49,7 @@ describe "Docker container" do
     before(:each)  { set :backend, :exec }
     [
       # [url, stdout, stderr]
-      [ "https://#{ENV["SERVICE_NAME"]}.local/ca.crt",
+      [ "https://#{ENV["SERVER_CRT_HOST"]}/ca.crt",
         "^#{Regexp.escape(IO.binread("/run/secrets/ca.crt"))}$",
       ],
     ].each do |url, stdout, stderr|
