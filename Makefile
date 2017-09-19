@@ -30,7 +30,7 @@ COMPOSE_VARS		+= SERVER_CRT_HOST \
 			   SERVICE_NAME
 
 # Certificate subject aletrnative names
-SERVER_CRT_HOST		?= simple-ca.local
+SERVER_CRT_HOST		?= $(shell echo $(SERVICE_NAME) | tr "_" "-").local
 
 ### DOCKER_MAKE_VARS ###########################################################
 
