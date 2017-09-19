@@ -19,6 +19,6 @@ LABEL \
   org.label-schema.vcs-ref="${VCS_REF}" \
   org.label-schema.build-date="${BUILD_DATE}"
 
-COPY config /
+COPY rootfs /
 RUN set -exo pipefail; \
   chmod 555 /var/www/simple-ca.cgi
