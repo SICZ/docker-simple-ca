@@ -1,6 +1,6 @@
 #!/bin/bash
 
-################################################################################
+### DIR_LOCATIONS ##############################################################
 
 # Simple CA requires to have all certificates and secrets in /var/lib/simple-ca
 SIMPLE_CA_DIR=/var/lib/simple-ca
@@ -11,7 +11,7 @@ CA_KEY_DIR=${SIMPLE_CA_PRIVATE_DIR}
 SERVER_CRT_DIR=${SIMPLE_CA_PRIVATE_DIR}
 SERVER_KEY_DIR=${SIMPLE_CA_PRIVATE_DIR}
 
-################################################################################
+### CA_USER ####################################################################
 
 # Default CA user realm
 : ${CA_USER_REALM:=Simple CA}
@@ -30,7 +30,7 @@ else
   : ${CA_USER_PWD_FILE:=${SIMPLE_CA_SECRETS_DIR}/ca_user.pwd}
 fi
 
-################################################################################
+### CA_CRT #####################################################################
 
 # Default CA certificate subject
 : ${CA_CRT_SUBJECT:=CN=${CA_USER_REALM}}
@@ -56,13 +56,13 @@ else
   : ${CA_KEY_PWD_FILE:=${CA_KEY_DIR}/ca.pwd}
 fi
 
-################################################################################
+### SERVER_KEY_PWD #############################################################
 
 # TODO Lighttpd does not support encrypted private key
 # # Default server private key passphrase file location
 # : ${SERVER_KEY_PWD_FILE:=${SERVER_KEY_DIR}/server.pwd}
 
-################################################################################
+### SERVER_USERDB ##############################################################
 
 # CA user database file
 : ${SERVER_USERDB_FILE:=/var/lib/lighttpd/user.db}

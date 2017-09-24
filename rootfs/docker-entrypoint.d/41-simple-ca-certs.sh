@@ -1,6 +1,6 @@
 #!/bin/bash
 
-################################################################################
+### SIMPLE_CA_DIR ##############################################################
 
 # Initialize CA's directory
 if [ ! -e ${SIMPLE_CA_DIR}/serial ]; then
@@ -15,7 +15,7 @@ if [ ! -e ${SIMPLE_CA_DIR}/serial ]; then
   chmod 640 ${SIMPLE_CA_DIR}/index ${SIMPLE_CA_DIR}/serial
 fi
 
-################################################################################
+### CA_CRT #####################################################################
 
 # Create CA private key and certificate
 if [ ! -e ${CA_KEY_FILE} -o ! -e ${CA_CRT_FILE} ]; then
@@ -43,7 +43,7 @@ else
   info "Using CA certificate file ${CA_CRT_FILE}"
 fi
 
-################################################################################
+### CA_USER ####################################################################
 
 # Get CA user name
 if [ -e ${CA_USER_NAME_FILE} ]; then
@@ -73,7 +73,7 @@ if [ ! -e ${CA_USER_PWD_FILE} ]; then
   chmod 440 ${CA_USER_PWD_FILE}
 fi
 
-################################################################################
+### PERMISSIONS ################################################################
 
 # Set permissions
 debug "Changing owner of ${SIMPLE_CA_DIR} to ${LIGHTTPD_FILE_OWNER}"
@@ -81,7 +81,7 @@ chown -R ${LIGHTTPD_FILE_OWNER} ${SIMPLE_CA_DIR}
 debug "Changing owner of ${SIMPLE_CA_SECRETS_DIR} to root:root"
 chown -R root:root ${SIMPLE_CA_SECRETS_DIR}
 
-################################################################################
+### SECRETS ####################################################################
 
 # Only create CA certificate, private key and passphrase and CA user secrets
 # and then exit
@@ -89,7 +89,7 @@ if [ "$1" = "secrets" ]; then
   exit 0
 fi
 
-################################################################################
+### LIBRESSL ###################################################################
 
 # Paths in openssl.cnf must be hardcoded because LibreSSL removed support
 # for ${ENV::VARIABLE}
@@ -112,12 +112,12 @@ if [ "${CA_KEY_PWD_FILE}" != "${SIMPLE_CA_PRIVATE_DIR}/ca.pwd" ]; then
   fi
 fi
 
-################################################################################
+### EXPORT #####################################################################
 
 # Export variables for /etc/lighttpd/server.conf and /var/www/simple-cgi.sh
 export SIMPLE_CA_DIR CA_KEY_PWD_FILE CA_CRT_FILE CA_USER_NAME CA_USER_REALM
 
-################################################################################
+### SERVER_CRT #################################################################
 
 # Create server private key and certificate
 if [ ! -e "${SERVER_CRT_FILE}" ]; then
@@ -169,7 +169,7 @@ if [ ! -e "${SERVER_CRT_FILE}" ]; then
   fi
 fi
 
-################################################################################
+### PERMISSIONS ################################################################
 
 # Set permissions
 debug "Changing owner of ${SIMPLE_CA_DIR} to ${LIGHTTPD_FILE_OWNER}"
