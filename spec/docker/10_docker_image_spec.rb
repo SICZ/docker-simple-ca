@@ -68,9 +68,9 @@ describe "Docker image", :test => :docker_image do
     [
       # [file,                                            mode, user,       group,      [expectations]]
       ["/docker-entrypoint.sh",                           755, "root",      "root",     [:be_file]],
-      ["/docker-entrypoint.d/31-environment-simple-ca.sh", 644, "root",     "root",     [:be_file, :eq_sha256sum]],
-      ["/docker-entrypoint.d/41-simple-ca-cert.sh",       644, "root",      "root",     [:be_file, :eq_sha256sum]],
-      ["/docker-entrypoint.d/60-simple-ca-userdb.sh",     644, "root",      "root",     [:be_file, :eq_sha256sum]],
+      ["/docker-entrypoint.d/31-simple-ca-environment.sh", 644, "root",     "root",     [:be_file, :eq_sha256sum]],
+      ["/docker-entrypoint.d/41-simple-ca-certs.sh",      644, "root",      "root",     [:be_file, :eq_sha256sum]],
+      ["/docker-entrypoint.d/60-server-userdb.sh",        644, "root",      "root",     [:be_file, :eq_sha256sum]],
       ["/etc/lighttpd/lighttpd.conf",                     644, "root",      "root",     [:be_file]],
       ["/etc/lighttpd/server.conf",                       644, "root",      "root",     [:be_file, :eq_sha256sum]],
       ["/etc/ssl/openssl.cnf",                            644, "root",      "root",     [:be_file, :eq_sha256sum]],
