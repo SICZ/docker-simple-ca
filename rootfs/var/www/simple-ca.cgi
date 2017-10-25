@@ -35,23 +35,29 @@ notFound() {
 
 sign() {
   local CRT=$1
-  unset DN DNS IP RID
+  local SUBJ
+  local DNS
+  local IP
+  local RID
+  local PARAM
+  local VARNAME
+  local VARVALUE
   IFS="&" # Split strings at '&'
   for PARAM in ${QUERY_STRING}; do
     VARNAME="${PARAM%%=*}"
     VARVALUE="${PARAM#*=}"
     case "${VARNAME}" in
-      dn)
-        DN=${VARVALUE}
+      subj)
+        SUBJ="${VARVALUE}"
         ;;
       dns)
-        DNS=${VARVALUE}
+        DNS="${VARVALUE}"
         ;;
       ip)
-        IP=${VARVALUE}
+        IP="${VARVALUE}"
         ;;
       rid)
-        RID=${VARVALUE}
+        RID="${VARVALUE}"
         ;;
       *)
         badRequest "Unknown parameter '${PARAM}'"
@@ -60,7 +66,7 @@ sign() {
   done
   unset IFS
 
-  [ -z "${DN}" ] && die "dn=<DN> is mandatory"
+  [ -z "${SUBJ}" ] && die "subj=<SUBJECT> is mandatory"
 
   # OpenSSL random file location
   export RANDFILE=./.rnd
@@ -71,7 +77,7 @@ sign() {
     -batch \
     -passin "file:${CA_KEY_PWD_FILE}" \
     -notext \
-    -subj "/${DN}" \
+    -subj "${SUBJ}" \
     -in <(cat -) \
     -out "${CRT}" \
     -extfile <(

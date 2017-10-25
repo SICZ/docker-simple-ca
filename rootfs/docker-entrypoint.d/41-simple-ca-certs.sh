@@ -31,7 +31,7 @@ if [ ! -e ${CA_KEY_FILE} -o ! -e ${CA_CRT_FILE} ]; then
   info "Creating CA private key file ${CA_KEY_FILE}"
   info "Creating CA certificate file ${CA_CRT_FILE}"
   openssl req -x509 -days 36520 \
-    -subj "/${CA_CRT_SUBJECT}" \
+    -subj "${CA_CRT_SUBJECT}" \
     -newkey rsa:2048 \
     -keyout ${CA_KEY_FILE} \
     -passout file:${CA_KEY_PWD_FILE} \
@@ -138,21 +138,21 @@ if [ ! -e "${SERVER_CRT_FILE}" ]; then
     sed -E "s/.*inet addr:([^ ]*).*/\1/" |
     tr "\n" ","
   )"
-  debug "DN:  ${SERVER_CRT_SUBJECT}"
-  debug "DNS: ${SERVER_CRT_REQ_HOST}"
-  debug "IP:  ${SERVER_CRT_REQ_IP}"
-  debug "OID: ${SERVER_CRT_OID}"
+  debug "SUBJ:   ${SERVER_CRT_SUBJECT}"
+  debug "DNS:    ${SERVER_CRT_REQ_HOST}"
+  debug "IP:     ${SERVER_CRT_REQ_IP}"
+  debug "OID:    ${SERVER_CRT_OID}"
 
   # Create server private key and certificate
   openssl req \
-    -subj "/${SERVER_CRT_SUBJECT}" \
+    -subj "${SERVER_CRT_SUBJECT}" \
     -newkey rsa:2048 \
     -keyout "${SERVER_KEY_FILE}" \
     -passout "pass:${SERVER_KEY_PWD}" |
   env \
     CA_DIR=${SIMPLE_CA_DIR} \
     PATH_INFO="/sign" \
-    QUERY_STRING="dn=${SERVER_CRT_SUBJECT}&dns=${SERVER_CRT_REQ_HOST}&ip=${SERVER_CRT_REQ_IP}&rid=${SERVER_CRT_OID}" \
+    QUERY_STRING="subj=${SERVER_CRT_SUBJECT}&dns=${SERVER_CRT_REQ_HOST}&ip=${SERVER_CRT_REQ_IP}&rid=${SERVER_CRT_OID}" \
   /var/www/simple-ca.cgi |
   egrep -v "^(HTTP/.*|Content-Type:.*|)$" > ${SERVER_CRT_FILE}
   chmod ${SERVER_CRT_FILE_MODE} ${SERVER_CRT_FILE}

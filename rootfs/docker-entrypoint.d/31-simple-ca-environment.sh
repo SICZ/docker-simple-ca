@@ -33,7 +33,7 @@ fi
 ### CA_CRT #####################################################################
 
 # Default CA certificate subject
-: ${CA_CRT_SUBJECT:=CN=${CA_USER_REALM}}
+: ${CA_CRT_SUBJECT:=/CN=${CA_USER_REALM}}
 
 # Default CA certificate file location
 if [ -e /run/secrets/ca.crt ]; then
