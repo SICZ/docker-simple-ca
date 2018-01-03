@@ -17,6 +17,10 @@ jobs:
       - setup_remote_docker:
           version: 17.06.0-ce
       - run:
+          name: Pull Docker images
+          command: |
+            make docker-pull
+      - run:
           name: sicz/simple-ca:latest
           command: |
             make ci
