@@ -1,7 +1,7 @@
 ### BASE_IMAGE #################################################################
 
 BASE_IMAGE_NAME		?= $(DOCKER_PROJECT)/lighttpd
-BASE_IMAGE_TAG		?= 1.4.45
+BASE_IMAGE_TAG		?= 1.4.48
 
 ### DOCKER_IMAGE ###############################################################
 
