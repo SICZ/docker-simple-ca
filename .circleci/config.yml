@@ -15,7 +15,7 @@ jobs:
             curl -sSL https://github.com/SICZ/Mk/archive/master.tar.gz | tar -xzf -
             mv Mk-master Mk
       - setup_remote_docker:
-          version: 17.06.0-ce
+          version: 17.11.0-ce
       - run:
           name: Pull Docker images
           command: |
