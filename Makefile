@@ -1,11 +1,11 @@
 ### BASE_IMAGE #################################################################
 
 BASE_IMAGE_NAME		?= $(DOCKER_PROJECT)/lighttpd
-BASE_IMAGE_TAG		?= 1.4.48
+BASE_IMAGE_TAG		?= 1.4.49
 
 ### DOCKER_IMAGE ###############################################################
 
-SIMPLE_CA_VERSION	?= 1.1.0
+SIMPLE_CA_VERSION	?= 1.1.1
 
 DOCKER_PROJECT		?= sicz
 DOCKER_PROJECT_DESC	?= A simple automated Certificate Authority
